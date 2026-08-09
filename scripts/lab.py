@@ -285,8 +285,14 @@ RUN rm -rf /code /src && mkdir -p /app /run/secrets \
 COPY workspace/ /app/
 COPY harbor-pi-runner.py /opt/cvdp-pi/harbor-pi-runner.py
 RUN chmod 0755 /opt/cvdp-pi/harbor-pi-runner.py \
+    && git init --separate-git-dir=/opt/cvdp-baseline /app \
+    && git --git-dir=/opt/cvdp-baseline --work-tree=/app config user.name cvdp-eval \
+    && git --git-dir=/opt/cvdp-baseline --work-tree=/app config user.email cvdp-eval@invalid \
+    && git --git-dir=/opt/cvdp-baseline --work-tree=/app add -A \
+    && git --git-dir=/opt/cvdp-baseline --work-tree=/app commit -q --allow-empty -m baseline \
     && chown -R 1000:1000 /app /run/secrets \
-    && chmod -R u+rwX,go+rX /app
+    && chmod -R u+rwX,go+rX /app \
+    && chmod -R a-w /opt/cvdp-baseline
 USER 1000:1000
 WORKDIR /app
 '''
@@ -589,6 +595,12 @@ def preflight_identity() -> str:
         "pi_subagents": lock["pi_subagents"],
         "models": MODEL_IDS,
         "reasoning": "xhigh",
+        "runtime_files": {
+            "harbor/pi_runner.py": sha256(ROOT / "harbor" / "pi_runner.py"),
+            "harbor_adapter.py": sha256(ROOT / "harbor_adapter.py"),
+            "scripts/lab.py": sha256(ROOT / "scripts" / "lab.py"),
+            "scripts/trajectory.py": sha256(ROOT / "scripts" / "trajectory.py"),
+        },
     }
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 

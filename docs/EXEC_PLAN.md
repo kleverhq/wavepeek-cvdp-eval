@@ -19,8 +19,8 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 - [x] (2026-08-09 14:17Z) Read `docs/GOAL.md`, mapped local CVDP, Harbor, Pi, pi-subagents, WavePeek, model, credential, and simulator inputs, and recorded their immutable revisions.
 - [x] (2026-08-09 14:17Z) Initialized Git history by committing the user-provided goal unchanged.
 - [x] (2026-08-09 15:13Z) Added and verified the frozen cohort, source lock, lock manifest, Just interface, CVDP/Harbor bootstrap, deterministic traditional/heavy Harbor task materialization, hidden verifier boundary, and reviewed baseline/treatment images.
-- [ ] Add the pinned Harbor Pi adapter, strict pi-subagents configuration, treatment-only WavePeek environment, audit wrapper, usage aggregation, and unit/integration checks (completed: adapter import/install-only Harbor trial, provider-only credential staging, strict runtime/image setup, transcript aggregation code; remaining: paid-session evidence and result normalization tests).
-- [ ] Add run selection, preflight gates, Harbor job generation/execution, artifact normalization, analysis, append-only journal, and operator documentation.
+- [x] (2026-08-09 15:49Z) Added the pinned Harbor Pi adapter, strict pi-subagents configuration, treatment-only WavePeek environment, audit wrapper, waveform retention, exact parent/subagent usage aggregation, and live identity evidence for both model profiles.
+- [x] (2026-08-09 15:49Z) Added task/model/arm/attempt/revision selectors, remote/local/branch revision resolution, offline and live preflight gates, Harbor job generation/execution/resume, exact-cell artifact normalization, comparative analysis, checksums, append-only journal, and operator documentation.
 - [ ] Run milestone reviews and resolve every correctness or reproducibility finding.
 - [ ] Execute and audit exactly four smoke trials for `cvdp_agentic_axis_broadcaster_0001`, both exact model profiles, both arms, one attempt, and WavePeek 2.2.0.
 - [ ] Perform the final prompt-to-artifact completion audit against every requirement in `docs/GOAL.md`.
@@ -41,6 +41,10 @@ This work does not create another benchmark orchestrator around Harbor, modify C
   Evidence: the first generated package name lacked Harbor's required `org/name` form; direct `TaskConfig.model_validate_toml` exposed the validation error. Generated names now use `cvdp-eval/<task-arm>`, and a Harbor NOP trial completed the hidden verifier.
 - Observation: a first milestone security review found that a root agent could replace `/venv/bin/pytest` and that a task-level auth bind exposed unrelated providers.
   Evidence: generated tasks now switch to UID/GID 1000 after root-owned verifier setup, and `harbor_adapter.py` uploads a temporary JSON file containing only the selected provider record, deletes the host temporary immediately, and removes the container copy after Pi exits.
+- Observation: the initial delegated-agent patch accidentally forced child thinking to Pi's default instead of honoring the generated profile.
+  Evidence: review caught `const thinkingLevel = undefined`; the patch now honors `agentConfig.thinking`, and the runner pins the child frontmatter from the parent's selected reasoning. Live preflight retained two identities per profile—parent and child—and all four identities report the exact provider/model with `xhigh`.
+- Observation: Harbor task workspaces are not Git repositories by default, so a naive post-run `git diff HEAD` fails.
+  Evidence: the first live preflight completed model calls but failed artifact capture with exit 129. Generated task images now create a root-protected Git directory at `/opt/cvdp-baseline` with a working-tree pointer in `/app`; the adapter captures intent-to-add, binary diff, and status through the protected baseline.
 
 ## Decision Log
 
@@ -65,7 +69,7 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 
 ## Outcomes & Retrospective
 
-Milestone 1 is implemented and reviewed. A clean workflow can verify the 18-row cohort and all lock hashes, restore CVDP inputs and heavy bundles, build provenance-linked baseline/treatment images, materialize traditional or heavy Harbor tasks, and complete a non-billing Harbor NOP verifier trial. The first review's six findings—source URL normalization, lock coverage, cached-row authentication, system-message preservation, root verifier tampering, and overbroad credential mounting—were fixed and re-reviewed; no milestone-1 finding remains. Paid Pi execution, normalization, analysis, revision multiplexing, and the four-cell smoke remain.
+Milestones 1–3 are implemented and reviewed. A clean workflow verifies and restores all inputs, builds provenance-linked arms, materializes all selected task types, resolves exact matrix cells and arbitrary committed WavePeek revisions, runs Harbor, retains/normalizes evidence, analyzes pairs, resumes interrupted jobs, and journals immutable pointers. The paid live preflight at `preflights/20260809T154832Z-27ce3baa` passed both profiles: each parent launched one `general-purpose` child, and all parent/child sessions proved exact provider/model plus `xhigh`. The four-cell CVDP smoke and final requirement audit remain.
 
 ## Context and Orientation
 
@@ -87,7 +91,7 @@ Harbor writes raw job and trial material beneath a dated run directory. Postproc
 
 The run interface still needs to turn additional remote commits, local committed revisions, and branches into content-addressed treatment images without rewriting the default 2.2.0 lock. The fixed smoke revision is fully proven: `wavepeek docs export` emits 24 embedded topics from the same built binary, and binary, skill, docs, source archive, commit, and image identities are locked.
 
-A paid single-cell Pi execution is still required to prove live RPC event shape, OAuth/API-key behavior, subagent transcript/session placement, model/thinking checks, and post-run usage aggregation. The Harbor custom adapter import and install-only execution already pass without a model call.
+The live preflight has proven Pi RPC event shape, both provider credentials, child transcript/session placement, exact model/thinking checks, and parent/subagent usage aggregation. The remaining external proof is the exact four-cell CVDP smoke, including treatment waveform-query compliance, patch capture, hidden verifier output, and normalization of all final artifacts.
 
 ## Plan of Work
 
@@ -218,3 +222,5 @@ External runtime dependencies are Docker, Git, Just, Python 3.11+, uv/uvx, netwo
 Plan revision note (2026-08-09): created the initial self-contained plan after repository and dependency research; recorded unresolved heavy-bundle and Harbor-mount details as explicit proof obligations rather than assumptions.
 
 Plan revision note (2026-08-09 15:13Z): recorded completed and independently reviewed Milestone 1, the native Harbor credential-upload design that replaced an unsafe full-auth bind, resolved bundle/docs/adapter questions, and the remaining paid-session and multi-revision proof obligations.
+
+Plan revision note (2026-08-09 15:49Z): recorded completed Milestones 2–3, reviewer-driven delegated-thinking and exact-cell fixes, the successful content-bound live parent/subagent preflight for both models, and the Git-baseline artifact design discovered during live execution.

@@ -103,12 +103,13 @@ class ReproduciblePi(Pi):
             await environment.exec(command="rm -f /run/secrets/pi-auth.json", user=0)
         if result.return_code:
             raise RuntimeError(f"Pi runner failed with status {result.return_code}")
-        patch = await self.exec_as_agent(
-            environment,
+        patch = await environment.exec(
             command=(
-                "git -C /app diff --binary HEAD > /logs/artifacts/final.patch && "
-                "git -C /app status --porcelain=v1 > /logs/artifacts/git-status.txt"
+                "git --git-dir=/opt/cvdp-baseline --work-tree=/app add -N -A && "
+                "git --git-dir=/opt/cvdp-baseline --work-tree=/app diff --binary HEAD > /logs/artifacts/final.patch && "
+                "git --git-dir=/opt/cvdp-baseline --work-tree=/app status --porcelain=v1 > /logs/artifacts/git-status.txt"
             ),
+            user=0,
         )
         if patch.return_code:
             raise RuntimeError("could not retain final agent patch")

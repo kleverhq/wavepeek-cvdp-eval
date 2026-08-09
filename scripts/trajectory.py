@@ -53,6 +53,8 @@ def agent_types(path: Path) -> list[str]:
     for record in records(path):
         message = record.get("message") or {}
         for content in message.get("content") or []:
+            if not isinstance(content, dict):
+                continue
             if content.get("type") != "toolCall" or content.get("name") != "Agent":
                 continue
             subagent_type = (content.get("arguments") or {}).get("subagent_type")
