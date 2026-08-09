@@ -21,8 +21,8 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 - [x] (2026-08-09 15:13Z) Added and verified the frozen cohort, source lock, lock manifest, Just interface, CVDP/Harbor bootstrap, deterministic traditional/heavy Harbor task materialization, hidden verifier boundary, and reviewed baseline/treatment images.
 - [x] (2026-08-09 15:49Z) Added the pinned Harbor Pi adapter, strict pi-subagents configuration, treatment-only WavePeek environment, audit wrapper, waveform retention, exact parent/subagent usage aggregation, and live identity evidence for both model profiles.
 - [x] (2026-08-09 15:49Z) Added task/model/arm/attempt/revision selectors, remote/local/branch revision resolution, offline and live preflight gates, Harbor job generation/execution/resume, exact-cell artifact normalization, comparative analysis, checksums, append-only journal, and operator documentation.
-- [ ] Run milestone reviews and resolve every correctness or reproducibility finding.
-- [ ] Execute and audit exactly four smoke trials for `cvdp_agentic_axis_broadcaster_0001`, both exact model profiles, both arms, one attempt, and WavePeek 2.2.0 (completed: diagnostic four-cell run `20260809T155016Z-1eaebab4`; remaining: accepted rerun after artifact-path and transient-waveform retention fixes).
+- [ ] Run milestone reviews and resolve every correctness or reproducibility finding (completed: milestone and three-lane final reviews; remaining: independent control pass after final fixes).
+- [x] (2026-08-09 16:52Z) Executed and audited exactly four accepted smoke trials for `cvdp_agentic_axis_broadcaster_0001`, both exact model profiles, both arms, one attempt, and WavePeek 2.2.0 in run `20260809T160628Z-fbb99664`.
 - [ ] Perform the final prompt-to-artifact completion audit against every requirement in `docs/GOAL.md`.
 
 ## Surprises & Discoveries
@@ -71,7 +71,7 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 
 ## Outcomes & Retrospective
 
-Milestones 1–3 are implemented and reviewed. A clean workflow verifies and restores all inputs, builds provenance-linked arms, materializes all selected task types, resolves exact matrix cells and arbitrary committed WavePeek revisions, runs Harbor, retains/normalizes evidence, analyzes pairs, resumes interrupted jobs, and journals immutable pointers. The paid live preflight at `preflights/20260809T154832Z-27ce3baa` passed both profiles: each parent launched one `general-purpose` child, and all parent/child sessions proved exact provider/model plus `xhigh`. The four-cell CVDP smoke and final requirement audit remain.
+Milestones 1–4 are implemented. The accepted run `20260809T160628Z-fbb99664` contains exactly four complete cells with no retries or audit errors. Baseline failed both hidden verifiers; WavePeek 2.2.0 treatment passed both and made 13 audited calls per treatment. The bound live preflight is `preflights/20260809T160543Z-51062efd`; complete preflight hashes are committed in `docs/PREFLIGHT_RESULT.json`. `docs/SMOKE_ANALYSIS.md` and `docs/SMOKE_RESULT.json` preserve the compact human and machine conclusions. Final review findings were applied: infrastructure exceptions now fail audit, continuation creates immutable child runs, future runs retain generated tasks, attempts are analyzed as independent replicates, timeout/concurrency are selectable, model profiles are discovered from config, compliance requires retained supported waveform evidence, and full run verification is exposed through Just.
 
 ## Context and Orientation
 
@@ -79,9 +79,9 @@ Milestones 1–3 are implemented and reviewed. A clean workflow verifies and res
 
 The frozen selection comes from CVDP tooling commit `8e894cf74414ab1eaea1e2b4e80a02f123df07b6` and CVDP v1.1.0 dataset commit `5b807d945f6a99aa645f7e43a64a2115e281b4bf`. `selection/selected.jsonl` will contain only compact metadata for 18 tasks and must always hash to `945c389a3f863faadfd863d22315285fa2049cac3595eb37aa33efb3b159124d`. `selection/sources.lock.json` will record source URLs, revisions, file checksums, sanitized heavy bundles, and pinned simulator image identity. Full CVDP rows are external cached inputs: traditional rows contain `system_message`, `prompt`, visible `context`, hidden `harness`, and hidden golden `patch`; heavy rows additionally refer to sanitized repository bundles. The generated task materializer copies visible context to a Docker build context and hidden harness files to Harbor's `tests/` directory. It validates target files but never writes golden patch contents.
 
-`experiment.toml` will be the human-readable manifest. It pins Harbor, CVDP, WavePeek, Pi, pi-subagents, the selection checksum, exact model identifiers, default attempt/concurrency/timeout settings, and output roots. The exact model profiles are `openai-codex/gpt-5.6-luna` and `openrouter/deepseek/deepseek-v4.1-terminus:exacto`, both with `xhigh` thinking. Model identity is checked again in Pi's emitted assistant events; a mismatch fails the trial rather than falling back.
+`config/experiment.json` is the human-readable experiment configuration and `experiment.lock.json` is its immutable supply-chain lock. They pin Harbor, CVDP, WavePeek, Pi, pi-subagents, selection checksum, model profiles, defaults, images, and file hashes. The required profiles are `openai-codex/gpt-5.6-luna` and `openrouter/deepseek/deepseek-v4-flash-0731`, both with `xhigh`; additional committed profiles are discovered without runner-code edits. Pi events and native sessions are checked after every trial, and a provider/model/reasoning mismatch fails infrastructure.
 
-`scripts/lab.py` will be the single standard-library command implementation called by `Justfile`. Its subcommands will verify immutable inputs, fetch/bootstrap external inputs, materialize tasks, build/print Harbor jobs, run Harbor, normalize results, analyze completed runs, append a journal record, and validate the repository. Small focused modules under `scripts/lab/` may be split out only when the implementation becomes less readable as one file. Generated caches and run outputs live below `.cache/` and `runs/` and are ignored by Git; reproducibility comes from checksums, manifests, lock files, and commands rather than checked-in generated contents.
+`scripts/lab.py` is the standard-library command implementation called by `Justfile`; `scripts/trajectory.py` contains its pure Pi trajectory parsers. The commands verify, bootstrap, materialize, preflight, resolve/run/continue Harbor jobs, normalize, inspect, and integrity-check evidence. Generated payloads live below `.cache/`, `preflights/`, and `runs/`; compact proofs and the append-only journal are committed under `docs/`.
 
 `harbor_adapter.py` will subclass Harbor's installed `Pi` agent only where stock behavior is insufficient. It installs exact Pi and pi-subagents package versions, prepares strict project-local Pi files, securely stages authentication, executes Pi at the exact provider/model and `xhigh`, copies the main/native/subagent trajectories, verifies provider/model/thinking metadata, aggregates main and subagent usage, and emits trial audit metadata. It must not schedule tasks, attempts, or arms.
 
@@ -93,7 +93,7 @@ Harbor writes raw job and trial material beneath a dated run directory. Postproc
 
 The run interface still needs to turn additional remote commits, local committed revisions, and branches into content-addressed treatment images without rewriting the default 2.2.0 lock. The fixed smoke revision is fully proven: `wavepeek docs export` emits 24 embedded topics from the same built binary, and binary, skill, docs, source archive, commit, and image identities are locked.
 
-The live preflight has proven Pi RPC event shape, both provider credentials, child transcript/session placement, exact model/thinking checks, and parent/subagent usage aggregation. The remaining external proof is the exact four-cell CVDP smoke, including treatment waveform-query compliance, patch capture, hidden verifier output, and normalization of all final artifacts.
+No implementation question remains. The accepted smoke proved treatment waveform-query compliance, patch capture, hidden verifier output, trajectories, usage, and normalization. The only remaining plan activity is the independent post-fix control review and formal completion checklist.
 
 ## Plan of Work
 
@@ -207,19 +207,19 @@ Pinned identities discovered before implementation:
 Exact model profiles:
 
     GPT-5.6 Luna              openai-codex/gpt-5.6-luna
-    DeepSeek V4 Flash 0731    openrouter/deepseek/deepseek-v4.1-terminus:exacto
+    DeepSeek V4 Flash 0731    openrouter/deepseek/deepseek-v4-flash-0731
 
 ## Interfaces and Dependencies
 
 `Justfile` is the stable operator interface. It must provide at least `check`, `bootstrap`, `materialize TASK ARM`, `dry-run SELECTOR`, `preflight SELECTOR`, `test`, `run TASKS MODELS ARMS ATTEMPTS`, `smoke`, `status RUN`, and `analyze RUN`. Recipes call `python3 scripts/lab.py ...` and pinned Harbor through `uvx`; they do not duplicate shell control flow.
 
-`experiment.toml` is parsed with Python 3.11+ `tomllib`. Revisions and hashes are full lowercase hexadecimal strings. Model profiles have stable short keys and exact `provider/model` values. Arms have stable keys `baseline` and `wavepeek`, with treatment carrying the WavePeek commit.
+`config/experiment.json`, `experiment.lock.json`, and `config/models/*.json` are parsed with the Python standard library. Revisions and hashes are full lowercase hexadecimal strings. Profiles have stable keys, exact `provider/model`, reasoning, credential policy, and optional compatibility data. Arms are `baseline` and `wavepeek@<sha>`.
 
 `scripts/lab.py` exposes a command-line `main(argv: list[str] | None = None) -> int`. Internal pure helpers accept `pathlib.Path` and dictionaries so the built-in `unittest` suite can exercise them without external services. Subprocess execution uses argument arrays, never shell interpolation, except the fixed Just/Harbor entry commands.
 
 `harbor_adapter.py` defines `class ReproduciblePi(harbor.agents.installed.pi.Pi)`. It overrides only installation, run setup/collection, and post-run context aggregation. Harbor discovers it through `harbor_adapter:ReproduciblePi` from the repository root. It keeps Harbor's `Pi.run` semantics and `ModelConnectionSpec` rather than introducing a second agent protocol.
 
-External runtime dependencies are Docker, Git, Just, Python 3.11+, uv/uvx, network access for first bootstrap, two configured Pi providers, and enough disk for CVDP and image caches. Harbor, Pi, pi-subagents, Rust builder, CVDP inputs, and WavePeek are all pinned by version plus immutable checksum/commit in `experiment.toml` and source lock files.
+External runtime dependencies are Docker, Git, Just, Python 3.12+, uv, first-bootstrap network access, configured Pi providers, and sufficient disk. Harbor, Pi, pi-subagents, Rust/Node builders, simulator, CVDP inputs, and WavePeek are pinned by immutable checksum/commit in `experiment.lock.json` and `selection/sources.lock.json`.
 
 Plan revision note (2026-08-09): created the initial self-contained plan after repository and dependency research; recorded unresolved heavy-bundle and Harbor-mount details as explicit proof obligations rather than assumptions.
 
@@ -228,3 +228,5 @@ Plan revision note (2026-08-09 15:13Z): recorded completed and independently rev
 Plan revision note (2026-08-09 15:49Z): recorded completed Milestones 2–3, reviewer-driven delegated-thinking and exact-cell fixes, the successful content-bound live parent/subagent preflight for both models, and the Git-baseline artifact design discovered during live execution.
 
 Plan revision note (2026-08-09 16:07Z): recorded the rejected first four-cell diagnostic smoke, Harbor's actual conventional-artifact destination, and the live waveform snapshot/queried-file retention fixes required before the accepted smoke.
+
+Plan revision note (2026-08-09 17:05Z): recorded the accepted four-cell run, complete live-preflight proof, final three-lane review findings and fixes, config-driven profiles/settings, immutable continuation, future task retention, and the remaining control pass/completion audit.

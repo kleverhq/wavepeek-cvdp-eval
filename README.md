@@ -61,7 +61,7 @@ Or select comma-separated task/model/arm values:
     just run 'cvdp_agentic_axis_broadcaster_0001,cvdp_agentic_lfsr_0001' \
       openai-codex-gpt-5.6-luna-xhigh all 1 default luna-subset
 
-The positional arguments are `tasks models arms attempts revisions name`; `just --list` is the authoritative quick reference. Arms are `baseline`, `wavepeek`, or `all`. Harbor retries are fixed to zero so scientific outcomes are never silently replaced; attempts are explicit matrix cells.
+The positional arguments are `tasks models arms attempts revisions name [concurrency agent_timeout verifier_timeout]`; `just --list` is the authoritative quick reference. Arms are `baseline`, `wavepeek`, or `all`. Harbor retries are fixed to zero so scientific outcomes are never silently replaced; attempts are explicit independent replicates. Selected profiles in one Harbor job must share a reasoning level.
 
 WavePeek revisions accept a full SHA, a clean local checkout optionally followed by `#branch-or-commit`, or a remote Git URL followed by `#branch-or-commit`. Comma-separated revisions compare multiple treatment commits against one shared baseline:
 
@@ -74,14 +74,15 @@ Resume only interrupted infrastructure work in the same Harbor job:
 
     just resume <run-id>
 
-Harbor preserves completed trials. Resume appends another journal event and never deletes the original evidence. Do not resume ordinary benchmark failures.
+Continuation creates a new Harbor run with a content-hashed `parent_run` link; the parent is never modified. The current minimal policy reruns the selected matrix rather than risking mutation of completed evidence. Do not continue ordinary benchmark failures.
 
 ## Results
 
-Inspect a run with:
+Inspect and verify a run with:
 
     just status latest
     just analyze latest
+    just verify latest
 
 Each `runs/<run-id>/` directory contains the resolved manifest, unmodified Harbor job/trial trees, normalized `summary.json`, `analysis.json`, source archives, and exhaustive `run-checksums.json`. Every completed trial must retain:
 
@@ -95,8 +96,10 @@ Each `runs/<run-id>/` directory contains the resolved manifest, unmodified Harbo
 - exact provider/model/reasoning identity;
 - WavePeek call audit with timestamps, duration, status, working directory, argv, waveform paths, and binary hash.
 
-OAuth monetary cost is not invented. Pi usage remains recorded, but subscription-backed Luna cost is reported as unavailable. Smoke analysis is explicitly labeled infrastructure evidence, not a causal performance claim.
+OAuth monetary cost is not invented. `reported_cost` remains unavailable; raw Pi catalog calculations are retained separately as `pi_calculated_cost` and are not billing evidence. Smoke analysis is explicitly labeled infrastructure evidence, not a causal performance claim.
 
-`docs/EXPERIMENT_JOURNAL.jsonl` is append-only and points to each content-addressed run manifest/checksum set. Generated run payloads are ignored by Git; the journal and committed experiment definitions are versioned.
+`docs/EXPERIMENT_JOURNAL.jsonl` is append-only and points to each content-addressed run manifest/checksum set. Generated run payloads are ignored by Git; compact proofs and conclusions are versioned.
+
+The accepted demonstration is run `20260809T160628Z-fbb99664`: all four infrastructure cells completed, both baselines failed the hidden verifier, and both WavePeek treatment cells passed after 13 audited calls each. See `docs/SMOKE_RESULT.json`, `docs/SMOKE_ANALYSIS.md`, and `docs/PREFLIGHT_RESULT.json`. This is an integration proof, not a causal performance claim.
 
 Never place CVDP golden patches, hidden tests, credentials, or generated `selection/subset.jsonl` in agent-visible workspaces. Harbor mounts hidden tests only after agent execution.

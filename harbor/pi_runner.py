@@ -25,7 +25,7 @@ def write_json(path: Path, value: object, mode: int = 0o600) -> None:
     temporary.replace(path)
 
 
-def configure(provider: str, model: str, thinking: str) -> Path:
+def configure(provider: str, model: str, thinking: str, profile: dict) -> Path:
     if thinking not in REASONING_LEVELS:
         raise RuntimeError(f"unsupported Pi reasoning level: {thinking}")
     agent_dir = Path(f"/tmp/cvdp-pi-{os.getuid()}")
@@ -58,36 +58,17 @@ def configure(provider: str, model: str, thinking: str) -> Path:
     shutil.copyfile(CONFIG_ROOT / "pi" / "models-store.json", agent_dir / "models-store.json")
 
     auth_path = agent_dir / "auth.json"
-    if provider == "openai-codex":
-        source = Path("/run/secrets/pi-auth.json")
-        if not source.is_file():
-            raise RuntimeError("missing Codex OAuth mount /run/secrets/pi-auth.json")
-        auth = json.loads(source.read_text())
-        if provider not in auth:
-            raise RuntimeError("Codex OAuth file has no openai-codex record")
-        write_json(auth_path, {provider: auth[provider]})
-    elif provider == "openrouter":
-        key = os.environ.pop("OPENROUTER_API_KEY", "")
-        if key:
-            record = {"type": "api_key", "key": key}
-        else:
-            source = Path("/run/secrets/pi-auth.json")
-            auth = json.loads(source.read_text()) if source.is_file() else {}
-            record = auth.get(provider)
-            if not record:
-                raise RuntimeError("missing OpenRouter credential")
-        write_json(auth_path, {provider: record})
-    else:
-        raise RuntimeError(f"unconfigured model provider: {provider}")
+    source = Path("/run/secrets/pi-auth.json")
+    auth = json.loads(source.read_text()) if source.is_file() else {}
+    record = auth.get(provider)
+    if not record:
+        raise RuntimeError(f"missing credential for {provider}")
+    write_json(auth_path, {provider: record})
 
-    providers = {}
-    if provider == "openrouter":
-        providers[provider] = {
-            "modelOverrides": {
-                model: {"compat": {"openRouterRouting": {"allow_fallbacks": False}}}
-            }
-        }
-    write_json(agent_dir / "models.json", {"providers": providers})
+    provider_config = {}
+    if profile.get("compat"):
+        provider_config["modelOverrides"] = {model: {"compat": profile["compat"]}}
+    write_json(agent_dir / "models.json", {"providers": {provider: provider_config}})
     return agent_dir
 
 
@@ -170,6 +151,9 @@ def main() -> int:
     provider = os.environ["CVDP_EVAL_PROVIDER"]
     model = os.environ["CVDP_EVAL_MODEL"]
     thinking = os.environ["CVDP_EVAL_THINKING"]
+    profile = json.loads(os.environ["CVDP_EVAL_MODEL_PROFILE"])
+    if (profile.get("provider"), profile.get("model"), profile.get("reasoning")) != (provider, model, thinking):
+        raise RuntimeError("resolved model profile does not match requested provider/model/reasoning")
     instruction = sys.stdin.read()
     if not instruction:
         raise RuntimeError("empty Harbor instruction")
@@ -179,7 +163,7 @@ def main() -> int:
     artifacts = Path("/logs/artifacts")
     for path in (logs, pi_logs / "sessions", pi_logs / "subagent-sessions", pi_logs / "tmp", artifacts):
         path.mkdir(parents=True, exist_ok=True)
-    agent_dir = configure(provider, model, thinking)
+    agent_dir = configure(provider, model, thinking, profile)
     os.environ.update(
         {
             "HOME": str(agent_dir.parent / "home"),
@@ -265,6 +249,8 @@ def main() -> int:
         process.wait()
     waveform_stop.set()
     waveform_thread.join(timeout=2)
+    if waveform_thread.is_alive():
+        raise RuntimeError("waveform retention watcher did not stop")
     retain_waveforms((Path("/app"), Path("/tmp")), artifacts / "waveforms", seen_waveforms, retained_waveforms)
     stderr_file.close()
     if not settled:

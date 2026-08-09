@@ -34,8 +34,8 @@ preflight selector="smoke":
     python3 scripts/lab.py preflight --selector "{{selector}}"
 
 # Run a selected matrix through pinned Harbor.
-run tasks="all" models="all" arms="all" attempts="1" revisions="default" name="experiment":
-    python3 scripts/lab.py run --tasks "{{tasks}}" --models "{{models}}" --arms "{{arms}}" --attempts "{{attempts}}" --revisions "{{revisions}}" --name "{{name}}"
+run tasks="all" models="all" arms="all" attempts="1" revisions="default" name="experiment" concurrency="4" agent_timeout="3600" verifier_timeout="600":
+    python3 scripts/lab.py run --tasks "{{tasks}}" --models "{{models}}" --arms "{{arms}}" --attempts "{{attempts}}" --revisions "{{revisions}}" --name "{{name}}" --concurrency "{{concurrency}}" --agent-timeout "{{agent_timeout}}" --verifier-timeout "{{verifier_timeout}}"
 
 # Prove both live provider/model/xhigh profiles and delegated-agent inheritance.
 live-preflight:
@@ -48,6 +48,10 @@ smoke: live-preflight
 # Resume an interrupted Harbor job in place without discarding completed trials.
 resume run="latest":
     python3 scripts/lab.py resume "{{run}}"
+
+# Verify every retained run file and bound live-preflight checksum.
+verify run="latest":
+    python3 scripts/lab.py verify "{{run}}"
 
 # Show normalized status for a run ID or latest.
 status run="latest":

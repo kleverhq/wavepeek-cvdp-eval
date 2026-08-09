@@ -17,6 +17,7 @@ from scripts.trajectory import agent_types, assistant_messages, session_identity
 
 PI_VERSION = "0.83.0"
 PI_SUBAGENTS_COMMIT = "2966cd5a33c0640de9698b56a39c11f83207a835"
+PROFILE_DIR = Path(__file__).resolve().parent / "config" / "models"
 RUNNER = "/opt/cvdp-pi/harbor-pi-runner.py"
 
 
@@ -50,18 +51,25 @@ class ReproduciblePi(Pi):
             raise ValueError("model name must be provider/model")
         provider, model = self.model_name.split("/", 1)
         thinking = str(self._flag_kwargs.get("thinking") or "")
-        if thinking != "xhigh":
-            raise ValueError(f"experiment requires xhigh reasoning, got {thinking!r}")
-        if (provider, model) not in {
-            ("openai-codex", "gpt-5.6-luna"),
-            ("openrouter", "deepseek/deepseek-v4-flash-0731"),
-        }:
-            raise ValueError(f"uncommitted model profile: {self.model_name}")
+        profiles = [json.loads(path.read_text()) for path in sorted(PROFILE_DIR.glob("*.json"))]
+        profile = next(
+            (
+                item for item in profiles
+                if item["provider"] == provider
+                and item["model"] == model
+                and item["reasoning"] == thinking
+            ),
+            None,
+        )
+        if profile is None:
+            raise ValueError(f"uncommitted model/reasoning profile: {self.model_name}:{thinking}")
 
         encoded = base64.b64encode(instruction.encode()).decode()
         auth_source = Path(os.environ.get("WAVEPEEK_EVAL_AUTH_FILE", "~/.pi/agent/auth.json")).expanduser()
         auth_records = json.loads(auth_source.read_text()) if auth_source.is_file() else {}
-        if provider == "openrouter" and (key := self._get_env("OPENROUTER_API_KEY")):
+        credential = profile.get("credential") or {}
+        credential_name = credential.get("name") if credential.get("type") == "environment" else None
+        if credential_name and (key := self._get_env(credential_name)):
             provider_record = {"type": "api_key", "key": key}
         else:
             provider_record = auth_records.get(provider)
@@ -75,32 +83,36 @@ class ReproduciblePi(Pi):
             await environment.upload_file(secret_path, "/run/secrets/pi-auth.json")
         finally:
             secret_path.unlink(missing_ok=True)
-        secured = await environment.exec(
-            command="chown 1000:1000 /run/secrets/pi-auth.json && chmod 600 /run/secrets/pi-auth.json",
-            user=0,
-        )
-        if secured.return_code:
-            raise RuntimeError("could not securely stage the selected provider credential")
-
-        env = {
-            "CVDP_EVAL_PROVIDER": provider,
-            "CVDP_EVAL_MODEL": model,
-            "CVDP_EVAL_THINKING": thinking,
-        }
-        treatment = await environment.exec(
-            command="test -f /opt/wavepeek/skills/wavepeek/SKILL.md"
-        )
-        if treatment.return_code == 0:
-            env["EXPERIMENT_SKILL"] = "/opt/wavepeek/skills/wavepeek/SKILL.md"
-            env["WAVEPEEK_INVOCATION_LOG"] = "/logs/artifacts/wavepeek-invocations.jsonl"
         try:
+            secured = await environment.exec(
+                command="chown 1000:1000 /run/secrets/pi-auth.json && chmod 600 /run/secrets/pi-auth.json",
+                user=0,
+            )
+            if secured.return_code:
+                raise RuntimeError("could not securely stage the selected provider credential")
+
+            env = {
+                "CVDP_EVAL_PROVIDER": provider,
+                "CVDP_EVAL_MODEL": model,
+                "CVDP_EVAL_THINKING": thinking,
+                "CVDP_EVAL_MODEL_PROFILE": json.dumps(profile, separators=(",", ":")),
+            }
+            treatment = await environment.exec(
+                command="test -f /opt/wavepeek/skills/wavepeek/SKILL.md"
+            )
+            if treatment.return_code == 0:
+                env["EXPERIMENT_SKILL"] = "/opt/wavepeek/skills/wavepeek/SKILL.md"
+                env["WAVEPEEK_INVOCATION_LOG"] = "/logs/artifacts/wavepeek-invocations.jsonl"
             result = await self.exec_as_agent(
                 environment,
                 command=f"printf %s {shlex.quote(encoded)} | base64 -d | python3 {RUNNER}",
                 env=env,
             )
         finally:
-            await environment.exec(command="rm -f /run/secrets/pi-auth.json", user=0)
+            await environment.exec(
+                command="rm -rf /run/secrets/pi-auth.json /tmp/cvdp-pi-1000 /tmp/home",
+                user=0,
+            )
         if result.return_code:
             raise RuntimeError(f"Pi runner failed with status {result.return_code}")
         patch = await environment.exec(
@@ -143,10 +155,11 @@ class ReproduciblePi(Pi):
         if len(main_sessions) != 1:
             raise RuntimeError(f"expected one authoritative main session, found {len(main_sessions)}")
         identities = [session_identity(path) for path in main_sessions + child_sessions]
+        expected_thinking = str(self._flag_kwargs.get("thinking") or "")
         expected_identity = {
             "provider": expected_provider,
             "model": expected_model,
-            "thinking": "xhigh",
+            "thinking": expected_thinking,
         }
         if any(identity != expected_identity for identity in identities):
             raise RuntimeError(f"session provider/model/reasoning mismatch: {identities}")
@@ -170,7 +183,7 @@ class ReproduciblePi(Pi):
         context.metadata = {
             "provider": expected_provider,
             "model": expected_model,
-            "reasoning": "xhigh",
+            "reasoning": expected_thinking,
             "main_trajectory": str(main.relative_to(self.logs_dir)),
             "subagent_transcripts": [str(path.relative_to(self.logs_dir)) for path in transcripts],
             "subagent_sessions": [str(path.relative_to(self.logs_dir)) for path in child_sessions],

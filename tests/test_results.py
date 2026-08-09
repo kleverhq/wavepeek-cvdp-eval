@@ -1,3 +1,4 @@
+import hashlib
 import json
 import tempfile
 import unittest
@@ -48,12 +49,17 @@ class ResultNormalizationTests(unittest.TestCase):
                 "exception_info": None,
             }
             (trial / "result.json").write_text(json.dumps(result))
+            retained_waveform = trial / "artifacts/logs/artifacts/waveforms/out.vcd"
+            retained_waveform.parent.mkdir(parents=True, exist_ok=True)
+            retained_waveform.write_bytes(b"waveform")
+            retained_hash = hashlib.sha256(retained_waveform.read_bytes()).hexdigest()
             (trial / "artifacts/logs/artifacts/wavepeek-invocations.jsonl").write_text(
                 json.dumps(
                     {
                         "started_at": "2026-01-01T00:00:01Z",
-                        "subcommand": "signals",
+                        "subcommand": "signal",
                         "waveform_paths": ["/app/out.vcd"],
+                        "retained_waveforms": [{"artifact": "waveforms/out.vcd", "sha256": retained_hash}],
                         "exit_status": 0,
                     }
                 )
@@ -61,12 +67,15 @@ class ResultNormalizationTests(unittest.TestCase):
             )
             manifest = {
                 "run_id": "run",
+                "harbor_job_dir": "harbor",
                 "harbor_job_name": "job",
                 "matrix": {
                     "trial_count": 1,
                     "tasks": ["task"],
+                    "models": ["profile"],
                     "model_ids": ["provider/model"],
                     "arms": ["wavepeek"],
+                    "arm_variants": 1,
                     "attempts": 1,
                     "wavepeek_revisions": [commit],
                 },
@@ -77,6 +86,14 @@ class ResultNormalizationTests(unittest.TestCase):
             self.assertTrue(normalized["benchmark_pass"])
             self.assertTrue(normalized["wavepeek"]["compliant"])
             self.assertEqual(normalized["runtime_seconds"], 5.0)
+
+            result["exception_info"] = {
+                "exception_type": "AgentTimeoutError",
+                "exception_message": "timed out",
+            }
+            (trial / "result.json").write_text(json.dumps(result))
+            _, errors = lab.normalize_run(run_dir, manifest)
+            self.assertTrue(any("AgentTimeoutError" in error for error in errors))
 
     def test_analysis_pairs_each_revision_with_shared_baseline(self):
         base = {

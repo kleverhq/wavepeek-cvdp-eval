@@ -1,0 +1,21 @@
+{
+  "reconstruction": "Post-run archives were made from the still-materialized dataset; Harbor Packager digests exactly match every accepted trial lock digest.",
+  "run_id": "20260809T160628Z-fbb99664",
+  "schema_version": 1,
+  "tasks": [
+    {
+      "archive": "artifacts/tasks/cvdp_agentic_axis_broadcaster_0001--baseline.tar",
+      "archive_sha256": "20147613c0b3f7c329f6bd5b879671ce535962d92b2fca5a8d897da3553b25a6",
+      "archive_size": 51200,
+      "harbor_content_digest": "sha256:f0420e3c8e45ea5965c3d1d7e31e9e8decada95c54774813bd2933cdd187d984",
+      "task": "cvdp_agentic_axis_broadcaster_0001--baseline"
+    },
+    {
+      "archive": "artifacts/tasks/cvdp_agentic_axis_broadcaster_0001--wavepeek-a27a96b557cb.tar",
+      "archive_sha256": "db5f11c77b4b0a1c8ed9f953aa83d69056ee057a99f6179362fd85c032da0ef7",
+      "archive_size": 51200,
+      "harbor_content_digest": "sha256:72e268f232bb900566f97f407fb6a4d0bd377d3c611fff265d7543d052066658",
+      "task": "cvdp_agentic_axis_broadcaster_0001--wavepeek-a27a96b557cb"
+    }
+  ]
+}

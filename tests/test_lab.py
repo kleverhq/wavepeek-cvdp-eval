@@ -23,6 +23,23 @@ class FrozenSelectionTests(unittest.TestCase):
         args = argparse.Namespace(selector="smoke")
         self.assertEqual(lab.resolve_matrix(args)["trial_count"], 4)
 
+    def test_run_settings_are_resolved_into_matrix(self):
+        args = argparse.Namespace(
+            selector=None,
+            tasks="cvdp_agentic_axis_broadcaster_0001",
+            models="openai-codex-gpt-5.6-luna-xhigh",
+            arms="baseline",
+            attempts="1",
+            revisions="default",
+            concurrency=2,
+            agent_timeout=123,
+            verifier_timeout=45,
+        )
+        matrix = lab.resolve_matrix(args)
+        self.assertEqual(matrix["concurrency"], 1)
+        self.assertEqual(matrix["agent_timeout_seconds"], 123)
+        self.assertEqual(matrix["verifier_timeout_seconds"], 45)
+
     def test_multiple_treatment_revisions_expand_without_duplicating_baseline(self):
         args = argparse.Namespace(
             selector=None,
@@ -33,8 +50,8 @@ class FrozenSelectionTests(unittest.TestCase):
             revisions="one,two",
         )
         locks = [
-            {"wavepeek": {"commit": "1" * 40}},
-            {"wavepeek": {"commit": "2" * 40}},
+            {"wavepeek": {"commit": "1" * 40, "repository": "repo-one"}},
+            {"wavepeek": {"commit": "2" * 40, "repository": "repo-two"}}
         ]
         with patch.object(lab, "resolve_wavepeek_revision", side_effect=locks):
             matrix = lab.resolve_matrix(args)
