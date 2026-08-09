@@ -45,7 +45,7 @@ live-preflight:
 smoke: live-preflight
     python3 scripts/lab.py run --selector smoke --name smoke
 
-# Resume an interrupted Harbor job in place without discarding completed trials.
+# Create a new lineage-linked continuation without modifying parent evidence.
 resume run="latest":
     python3 scripts/lab.py resume "{{run}}"
 
@@ -57,6 +57,6 @@ verify run="latest":
 status run="latest":
     python3 scripts/lab.py status "{{run}}"
 
-# Regenerate compact analysis for a run ID or latest.
+# Print the retained analysis for a run ID or latest.
 analyze run="latest":
     python3 scripts/lab.py analyze "{{run}}"

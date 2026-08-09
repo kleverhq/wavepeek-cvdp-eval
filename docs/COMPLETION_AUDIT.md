@@ -19,7 +19,7 @@ Audit date: 2026-08-09. Accepted smoke: `20260809T160628Z-fbb99664`. Rejected di
 ## 3. Exact model profiles and delegation policy
 
 - **Required profiles are exact.** `config/models/` maps GPT-5.6 Luna to `openai-codex/gpt-5.6-luna` and DeepSeek V4 Flash 0731 to `openrouter/deepseek/deepseek-v4-flash-0731`; both are `xhigh`. OpenRouter `allow_fallbacks` is false.
-- **Profiles are config-driven.** `scripts/lab.py` discovers all committed model JSON files; `harbor_adapter.py` validates the selected provider/model/reasoning against those files and sends the complete non-secret profile to the runner. Additional homogeneous-reasoning profiles require config/lock updates, not runner branching.
+- **Profiles are config-driven.** `scripts/lab.py` discovers all committed model JSON files; `harbor_adapter.py` validates the selected provider/model/reasoning against those files and sends the complete non-secret profile to the runner. Additional profiles, including different reasoning levels, require config/lock updates, not runner branching; the resolved Harbor JobConfig carries reasoning per agent.
 - **Main and child identity fail closed.** The adapter validates every assistant event and every native main/child session against exact provider/model/reasoning. An unavailable or substituted model raises infrastructure failure.
 - **Only `general-purpose` delegation is exposed.** Project-local defaults, Explore, Plan, unknown fallback, scheduling and nested extension loading are disabled. The patched extension honors only frontmatter thinking, generated from the selected parent reasoning; child model remains inherited.
 - **Live proof exists.** `docs/PREFLIGHT_RESULT.json` hashes all 106 files from preflight `20260809T160543Z-51062efd`. Each model's parent called one `general-purpose` child; parent and child reported the same exact provider/model and `xhigh`, with main event stream, native sessions, child transcript/session and usage retained.
@@ -62,6 +62,10 @@ Audit date: 2026-08-09. Accepted smoke: `20260809T160628Z-fbb99664`. Rejected di
 - **Exact cardinality.** Run `20260809T160628Z-fbb99664` has exactly four observed and expected cells: one task × two exact profiles × baseline/treatment × one attempt. Harbor recorded zero retries and no exceptions/audit errors.
 - **Results.** Both baseline cells failed the hidden benchmark; both WavePeek treatment cells passed. Both treatment cells are compliant and each made 13 audited calls. All four provider/model/reasoning identities are exact.
 - **Interpretation is bounded.** The committed analysis explicitly states that four trials are infrastructure evidence, not a defensible causal claim.
+
+## 9. Clean-checkout proof
+
+- **Bootstrap was exercised from a new clone.** `docs/CLEAN_BOOTSTRAP.md` records `just check`, `just bootstrap`, `just test`, and `just dry-run smoke` from `/tmp/wavepeek-eval-clean` at commit `46ab19b`. Bootstrap downloaded and verified all 45 CVDP inputs, reproduced locked images, created the runner environment, installed pinned Harbor, passed 17 tests, resolved exactly four smoke cells, and left Git clean. It made no model calls.
 
 ## Audit conclusion
 

@@ -61,7 +61,7 @@ Or select comma-separated task/model/arm values:
     just run 'cvdp_agentic_axis_broadcaster_0001,cvdp_agentic_lfsr_0001' \
       openai-codex-gpt-5.6-luna-xhigh all 1 default luna-subset
 
-The positional arguments are `tasks models arms attempts revisions name [concurrency agent_timeout verifier_timeout]`; `just --list` is the authoritative quick reference. Arms are `baseline`, `wavepeek`, or `all`. Harbor retries are fixed to zero so scientific outcomes are never silently replaced; attempts are explicit independent replicates. Selected profiles in one Harbor job must share a reasoning level.
+The positional arguments are `tasks models arms attempts revisions name [concurrency agent_timeout verifier_timeout]`; `just --list` is the authoritative quick reference. Arms are `baseline`, `wavepeek`, or `all`. Harbor retries are fixed to zero so scientific outcomes are never silently replaced; attempts are explicit independent replicates. Each selected profile carries its own reasoning level into Harbor's per-agent configuration.
 
 WavePeek revisions accept a full SHA, a clean local checkout optionally followed by `#branch-or-commit`, or a remote Git URL followed by `#branch-or-commit`. Comma-separated revisions compare multiple treatment commits against one shared baseline:
 

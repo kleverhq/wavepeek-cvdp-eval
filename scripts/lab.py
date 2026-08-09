@@ -495,10 +495,10 @@ def resolve_matrix(args: argparse.Namespace) -> dict:
     verifier_timeout = int(getattr(args, "verifier_timeout", None) or config["evaluator_timeout_seconds"])
     if min(concurrency, agent_timeout, verifier_timeout) < 1:
         raise ValueError("concurrency and timeouts must be positive")
-    reasoning_levels = {MODEL_PROFILES[key]["reasoning"] for key in model_keys}
-    if len(reasoning_levels) != 1:
-        raise ValueError("one Harbor job can contain only profiles with the same reasoning level")
-    reasoning = reasoning_levels.pop()
+    reasoning_by_profile = {
+        key: MODEL_PROFILES[key]["reasoning"]
+        for key in model_keys
+    }
     treatment_locks = [resolve_wavepeek_revision(spec) for spec in revision_specs] if "wavepeek" in arms else []
     commits = [lock["wavepeek"]["commit"] for lock in treatment_locks]
     if len(commits) != len(set(commits)):
@@ -518,7 +518,8 @@ def resolve_matrix(args: argparse.Namespace) -> dict:
         "agent_timeout_seconds": agent_timeout,
         "verifier_timeout_seconds": verifier_timeout,
         "trial_count": count,
-        "reasoning": reasoning,
+        "reasoning": next(iter(set(reasoning_by_profile.values()))) if len(set(reasoning_by_profile.values())) == 1 else "mixed",
+        "reasoning_by_profile": reasoning_by_profile,
         "wavepeek_revisions": commits,
         "wavepeek_selectors": [
             {
@@ -570,24 +571,30 @@ def resolved_job(matrix: dict, name: str) -> tuple[dict, list[str]]:
     run_dir = ROOT / "runs" / run_id
     harbor_dir = run_dir / "harbor"
     execution_dataset = run_dir / "inputs" / "tasks"
+    job_config_path = run_dir / "harbor-job.json"
+    job_config = {
+        "job_name": f"{name}-{run_id}",
+        "jobs_dir": str(harbor_dir),
+        "n_attempts": matrix["attempts"],
+        "n_concurrent_trials": matrix["concurrency"],
+        "retry": {"max_retries": 0},
+        "agents": [
+            {
+                "name": "harbor_adapter:ReproduciblePi",
+                "model_name": MODEL_IDS[profile_id],
+                "kwargs": {
+                    "version": "0.83.0",
+                    "thinking": MODEL_PROFILES[profile_id]["reasoning"],
+                },
+            }
+            for profile_id in matrix["models"]
+        ],
+        "datasets": [{"path": str(execution_dataset)}],
+    }
     command = [
-        "uv", "run", "--no-dev", "--project", str(HARBOR_SOURCE), "harbor", "run",
-        "--path", str(execution_dataset),
-        "--agent", "harbor_adapter:ReproduciblePi",
+        "uv", "run", "--no-dev", "--project", str(HARBOR_SOURCE),
+        "harbor", "jobs", "start", "--config", str(job_config_path),
     ]
-    for model in matrix["model_ids"]:
-        command.extend(["--model", model])
-    command.extend(
-        [
-            "--agent-kwarg", "version=0.83.0",
-            "--agent-kwarg", f"thinking={matrix['reasoning']}",
-            "--n-attempts", str(matrix["attempts"]),
-            "--n-concurrent", str(matrix["concurrency"]),
-            "--max-retries", "0",
-            "--jobs-dir", str(harbor_dir),
-            "--job-name", f"{name}-{run_id}",
-        ]
-    )
     manifest = {
         "schema_version": 1,
         "run_id": run_id,
@@ -600,6 +607,8 @@ def resolved_job(matrix: dict, name: str) -> tuple[dict, list[str]]:
         "harbor_commit": HARBOR_COMMIT,
         "harbor_job_dir": str(harbor_dir.relative_to(ROOT)),
         "harbor_job_name": f"{name}-{run_id}",
+        "harbor_job_config": str(job_config_path.relative_to(run_dir)),
+        "resolved_harbor_job": job_config,
         "agent": "harbor_adapter:ReproduciblePi",
         "pi_commit": json.loads(EXPERIMENT_LOCK.read_text())["pi"]["commit"],
         "pi_subagents_commit": json.loads(EXPERIMENT_LOCK.read_text())["pi_subagents"]["commit"],
@@ -851,6 +860,8 @@ def analyze_summary(trials: list[dict]) -> dict:
                 "reported_cost": usage_data.get("reportedCost"),
                 "pi_calculated_cost": usage_data.get("piCalculatedCost"),
                 "wavepeek_calls": trial["wavepeek"]["total_calls"],
+                "wavepeek_successful_queries": trial["wavepeek"]["successful_meaningful_calls"],
+                "wavepeek_duration_seconds": trial["wavepeek"]["total_duration_seconds"],
                 "wavepeek_compliant": trial["wavepeek"]["compliant"],
             }
         )
@@ -903,7 +914,7 @@ def render_analysis_markdown(manifest: dict, trials: list[dict]) -> str:
         f"{manifest['matrix']['arm_variants']} arm variant(s), {manifest['matrix']['attempts']} independent attempt(s); "
         f"expected trials: {manifest['matrix']['trial_count']}.",
         "",
-        "| Task | Model | Arm | Attempt | Infrastructure | Benchmark | Runtime (s) | Input | Output | Cache read | Subagents | WavePeek calls |",
+        "| Task | Model | Arm | Attempt | Infrastructure | Benchmark | Runtime (s) | Input | Output | Cache read | Subagents | WavePeek calls / successful / duration |",
         "|---|---|---|---:|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for trial in sorted(trials, key=lambda item: (item["task_id"], item["model"], item["arm"], item["attempt"])):
@@ -912,21 +923,34 @@ def render_analysis_markdown(manifest: dict, trials: list[dict]) -> str:
             f"| {trial['task_id']} | {trial['model']} | {trial['arm']} | {trial['attempt']} | "
             f"{trial['infrastructure_status']} | {trial['benchmark_pass']} | {trial['runtime_seconds']} | "
             f"{usage_data.get('input')} | {usage_data.get('output')} | {usage_data.get('cacheRead')} | "
-            f"{len(trial['trajectories']['subagents'])} | {trial['wavepeek']['total_calls']} |"
+            f"{len(trial['trajectories']['subagents'])} | {trial['wavepeek']['total_calls']} / "
+            f"{trial['wavepeek']['successful_meaningful_calls']} / {trial['wavepeek']['total_duration_seconds']:.6f}s |"
         )
     complete = sum(trial["infrastructure_status"] == "complete" for trial in trials)
     passes = sum(bool(trial["benchmark_pass"]) for trial in trials)
     delegated = sum(len(trial["trajectories"]["subagents"]) for trial in trials)
     calls = sum(trial["wavepeek"]["total_calls"] for trial in trials)
+    successful_queries = sum(trial["wavepeek"]["successful_meaningful_calls"] for trial in trials)
+    wavepeek_duration = sum(trial["wavepeek"]["total_duration_seconds"] for trial in trials)
+    reported_costs = [trial["usage"].get("reportedCost") for trial in trials if trial.get("usage") and trial["usage"].get("reportedCost") is not None]
+    delegation_observations = ", ".join(
+        f"{trial['model']} {trial['arm']}={len(trial['trajectories']['subagents'])}"
+        for trial in sorted(trials, key=lambda item: (item["model"], item["arm"], item["attempt"]))
+    )
     lines.extend(
         [
             "",
             f"Compact result: {complete}/{len(trials)} infrastructure-complete, {passes}/{len(trials)} benchmark passes, "
-            f"{delegated} delegated trajectory/trajectories, and {calls} audited WavePeek calls.",
+            f"{delegated} delegated trajectory/trajectories, {calls} audited WavePeek calls, "
+            f"{successful_queries} successful retained-waveform queries, and {wavepeek_duration:.6f}s total WavePeek CLI time.",
             "",
-            "Trajectory observation: delegation was permitted and measured, not forced; exact main and child paths are in summary.json.",
+            f"Trajectory observation (subagent counts by cell): {delegation_observations}. Delegation was permitted and measured, not forced; exact paths are in summary.json.",
             "",
-            "Cost conclusion: reported provider cost is unavailable. Pi-calculated catalog values remain raw estimates, not billing evidence.",
+            (
+                f"Cost conclusion: provider-reported total is {sum(reported_costs):.8f}."
+                if reported_costs
+                else "Cost conclusion: reported provider cost is unavailable. Pi-calculated catalog values remain raw estimates, not billing evidence."
+            ),
             "",
             "Conclusion: this output is experiment evidence; small subsets or smoke runs are not statistical evidence of a causal effect.",
             "",
@@ -1032,6 +1056,7 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
             "wavepeek": {
                 "total_calls": len(invocations),
                 "successful_meaningful_calls": len(successful),
+                "total_duration_seconds": sum(float(record.get("duration_seconds", 0) or 0) for record in invocations),
                 "compliant": bool(successful) if arm.startswith("wavepeek@") else None,
                 "first_successful_call": successful[0]["started_at"] if successful else None,
                 "audit": str(artifact_prefix / "wavepeek-invocations.jsonl") if invocations else None,
@@ -1123,6 +1148,10 @@ def execute_job(manifest: dict, command: list[str]) -> int:
             "marker": str(retained_marker.relative_to(run_dir)),
             "marker_sha256": sha256(preflight_marker),
         }
+    job_config_path = run_dir / manifest["harbor_job_config"]
+    job_config_path.write_text(
+        json.dumps(manifest["resolved_harbor_job"], indent=2, sort_keys=True) + "\n"
+    )
     manifest_path = run_dir / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     environment = os.environ.copy()
@@ -1157,9 +1186,26 @@ def execute_job(manifest: dict, command: list[str]) -> int:
                 "infrastructure_complete": sum(trial["infrastructure_status"] == "complete" for trial in summary["trials"]),
                 "benchmark_passes": sum(bool(trial["benchmark_pass"]) for trial in summary["trials"]),
                 "wavepeek_calls": sum(trial["wavepeek"]["total_calls"] for trial in summary["trials"]),
+                "wavepeek_successful_queries": sum(trial["wavepeek"]["successful_meaningful_calls"] for trial in summary["trials"]),
+                "wavepeek_duration_seconds": sum(trial["wavepeek"]["total_duration_seconds"] for trial in summary["trials"]),
+                "reported_cost": (
+                    sum(trial["usage"]["reportedCost"] for trial in summary["trials"] if trial.get("usage") and trial["usage"].get("reportedCost") is not None)
+                    if any(trial.get("usage") and trial["usage"].get("reportedCost") is not None for trial in summary["trials"])
+                    else None
+                ),
             },
             "trajectory_observations": {
                 "delegated_trajectories": sum(len(trial["trajectories"]["subagents"]) for trial in summary["trials"]),
+                "by_cell": [
+                    {
+                        "task": trial["task_id"],
+                        "model": trial["model"],
+                        "arm": trial["arm"],
+                        "attempt": trial["attempt"],
+                        "subagents": len(trial["trajectories"]["subagents"]),
+                    }
+                    for trial in summary["trials"]
+                ],
             },
             "conclusion": "Infrastructure evidence retained; statistical interpretation depends on selected cohort and attempts.",
             "raw_artifacts": str((run_dir / "harbor" / manifest["harbor_job_name"]).relative_to(ROOT)),

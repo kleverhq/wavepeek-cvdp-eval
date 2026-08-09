@@ -21,9 +21,9 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 - [x] (2026-08-09 15:13Z) Added and verified the frozen cohort, source lock, lock manifest, Just interface, CVDP/Harbor bootstrap, deterministic traditional/heavy Harbor task materialization, hidden verifier boundary, and reviewed baseline/treatment images.
 - [x] (2026-08-09 15:49Z) Added the pinned Harbor Pi adapter, strict pi-subagents configuration, treatment-only WavePeek environment, audit wrapper, waveform retention, exact parent/subagent usage aggregation, and live identity evidence for both model profiles.
 - [x] (2026-08-09 15:49Z) Added task/model/arm/attempt/revision selectors, remote/local/branch revision resolution, offline and live preflight gates, Harbor job generation/execution/resume, exact-cell artifact normalization, comparative analysis, checksums, append-only journal, and operator documentation.
-- [ ] Run milestone reviews and resolve every correctness or reproducibility finding (completed: milestone and three-lane final reviews; remaining: independent control pass after final fixes).
+- [x] (2026-08-09 17:55Z) Ran milestone reviews, three parallel final lanes, and two independent control passes; resolved every substantive correctness, security, reproducibility, and evidence finding.
 - [x] (2026-08-09 16:52Z) Executed and audited exactly four accepted smoke trials for `cvdp_agentic_axis_broadcaster_0001`, both exact model profiles, both arms, one attempt, and WavePeek 2.2.0 in run `20260809T160628Z-fbb99664`.
-- [ ] Perform the final prompt-to-artifact completion audit against every requirement in `docs/GOAL.md`.
+- [x] (2026-08-09 17:55Z) Performed the final prompt-to-artifact audit in `docs/COMPLETION_AUDIT.md`; every explicit requirement maps to code, retained raw evidence, or committed compact proof.
 
 ## Surprises & Discoveries
 
@@ -71,7 +71,7 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 
 ## Outcomes & Retrospective
 
-Milestones 1–4 are implemented. The accepted run `20260809T160628Z-fbb99664` contains exactly four complete cells with no retries or audit errors. Baseline failed both hidden verifiers; WavePeek 2.2.0 treatment passed both and made 13 audited calls per treatment. The bound live preflight is `preflights/20260809T160543Z-51062efd`; complete preflight hashes are committed in `docs/PREFLIGHT_RESULT.json`. `docs/SMOKE_ANALYSIS.md` and `docs/SMOKE_RESULT.json` preserve the compact human and machine conclusions. Final review findings were applied: infrastructure exceptions now fail audit, continuation creates immutable child runs, future runs retain generated tasks, attempts are analyzed as independent replicates, timeout/concurrency are selectable, model profiles are discovered from config, compliance requires retained supported waveform evidence, and full run verification is exposed through Just.
+Milestones 1–4 and the completion audit are complete. The accepted run `20260809T160628Z-fbb99664` contains exactly four complete cells with no retries or audit errors. Baseline failed both hidden verifiers; WavePeek 2.2.0 treatment passed both and made 13 audited calls per treatment. The bound live preflight is `preflights/20260809T160543Z-51062efd`; complete preflight hashes are committed in `docs/PREFLIGHT_RESULT.json`. `docs/SMOKE_ANALYSIS.md` and `docs/SMOKE_RESULT.json` preserve the compact human and machine conclusions. Final review findings were applied: infrastructure exceptions now fail audit, continuation creates immutable child runs, future runs retain generated tasks, attempts are analyzed as independent replicates, timeout/concurrency are selectable, model profiles are discovered from config, compliance requires retained supported waveform evidence, and full run verification is exposed through Just.
 
 ## Context and Orientation
 
@@ -93,7 +93,7 @@ Harbor writes raw job and trial material beneath a dated run directory. Postproc
 
 The run interface still needs to turn additional remote commits, local committed revisions, and branches into content-addressed treatment images without rewriting the default 2.2.0 lock. The fixed smoke revision is fully proven: `wavepeek docs export` emits 24 embedded topics from the same built binary, and binary, skill, docs, source archive, commit, and image identities are locked.
 
-No implementation question remains. The accepted smoke proved treatment waveform-query compliance, patch capture, hidden verifier output, trajectories, usage, and normalization. The only remaining plan activity is the independent post-fix control review and formal completion checklist.
+No implementation question remains. The accepted smoke proved treatment waveform-query compliance, patch capture, hidden verifier output, trajectories, usage, and normalization. The post-fix control review and formal checklist are complete. A fresh clone at commit `46ab19b` also completed `just check`, `just bootstrap`, `just test`, and a non-billing four-cell dry run with clean Git status; evidence is in `docs/CLEAN_BOOTSTRAP.md`. No required work remains.
 
 ## Plan of Work
 
@@ -230,3 +230,5 @@ Plan revision note (2026-08-09 15:49Z): recorded completed Milestones 2–3, rev
 Plan revision note (2026-08-09 16:07Z): recorded the rejected first four-cell diagnostic smoke, Harbor's actual conventional-artifact destination, and the live waveform snapshot/queried-file retention fixes required before the accepted smoke.
 
 Plan revision note (2026-08-09 17:05Z): recorded the accepted four-cell run, complete live-preflight proof, final three-lane review findings and fixes, config-driven profiles/settings, immutable continuation, future task retention, and the remaining control pass/completion audit.
+
+Plan revision note (2026-08-09 17:55Z): recorded successful clean-checkout bootstrap, two completed control passes, retained executed-task snapshots for future runs, strict retained-waveform compliance, complete generic analysis/journal output, and final prompt-to-artifact completion.

@@ -104,12 +104,26 @@ class ResultNormalizationTests(unittest.TestCase):
             "runtime_seconds": 1.0,
             "infrastructure_status": "complete",
             "usage": {},
-            "wavepeek": {"total_calls": 0, "compliant": None},
+            "wavepeek": {
+                "total_calls": 0,
+                "successful_meaningful_calls": 0,
+                "total_duration_seconds": 0.0,
+                "compliant": None,
+            },
         }
         trials = [
             {**base, "arm": "baseline"},
-            {**base, "arm": "wavepeek@one", "benchmark_pass": True, "wavepeek": {"total_calls": 1, "compliant": True}},
-            {**base, "arm": "wavepeek@two", "wavepeek": {"total_calls": 2, "compliant": True}},
+            {
+                **base,
+                "arm": "wavepeek@one",
+                "benchmark_pass": True,
+                "wavepeek": {"total_calls": 1, "successful_meaningful_calls": 1, "total_duration_seconds": 0.1, "compliant": True},
+            },
+            {
+                **base,
+                "arm": "wavepeek@two",
+                "wavepeek": {"total_calls": 2, "successful_meaningful_calls": 2, "total_duration_seconds": 0.2, "compliant": True},
+            },
         ]
         analysis = lab.analyze_summary(trials)
         self.assertEqual(len(analysis["pairs"]), 2)

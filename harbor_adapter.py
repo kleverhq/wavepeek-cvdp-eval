@@ -78,12 +78,9 @@ class ReproduciblePi(Pi):
         with tempfile.NamedTemporaryFile("w", prefix="cvdp-auth-", suffix=".json", delete=False) as secret:
             json.dump({provider: provider_record}, secret)
             secret_path = Path(secret.name)
-        secret_path.chmod(0o600)
         try:
+            secret_path.chmod(0o600)
             await environment.upload_file(secret_path, "/run/secrets/pi-auth.json")
-        finally:
-            secret_path.unlink(missing_ok=True)
-        try:
             secured = await environment.exec(
                 command="chown 1000:1000 /run/secrets/pi-auth.json && chmod 600 /run/secrets/pi-auth.json",
                 user=0,
@@ -109,10 +106,14 @@ class ReproduciblePi(Pi):
                 env=env,
             )
         finally:
-            await environment.exec(
-                command="rm -rf /run/secrets/pi-auth.json /tmp/cvdp-pi-1000 /tmp/home",
-                user=0,
-            )
+            secret_path.unlink(missing_ok=True)
+            try:
+                await environment.exec(
+                    command="rm -rf /run/secrets/pi-auth.json /tmp/cvdp-pi-1000 /tmp/home",
+                    user=0,
+                )
+            except Exception:
+                self.logger.warning("Best-effort credential cleanup failed", exc_info=True)
         if result.return_code:
             raise RuntimeError(f"Pi runner failed with status {result.return_code}")
         patch = await environment.exec(
