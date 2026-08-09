@@ -22,7 +22,7 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 - [x] (2026-08-09 15:49Z) Added the pinned Harbor Pi adapter, strict pi-subagents configuration, treatment-only WavePeek environment, audit wrapper, waveform retention, exact parent/subagent usage aggregation, and live identity evidence for both model profiles.
 - [x] (2026-08-09 15:49Z) Added task/model/arm/attempt/revision selectors, remote/local/branch revision resolution, offline and live preflight gates, Harbor job generation/execution/resume, exact-cell artifact normalization, comparative analysis, checksums, append-only journal, and operator documentation.
 - [ ] Run milestone reviews and resolve every correctness or reproducibility finding.
-- [ ] Execute and audit exactly four smoke trials for `cvdp_agentic_axis_broadcaster_0001`, both exact model profiles, both arms, one attempt, and WavePeek 2.2.0.
+- [ ] Execute and audit exactly four smoke trials for `cvdp_agentic_axis_broadcaster_0001`, both exact model profiles, both arms, one attempt, and WavePeek 2.2.0 (completed: diagnostic four-cell run `20260809T155016Z-1eaebab4`; remaining: accepted rerun after artifact-path and transient-waveform retention fixes).
 - [ ] Perform the final prompt-to-artifact completion audit against every requirement in `docs/GOAL.md`.
 
 ## Surprises & Discoveries
@@ -45,6 +45,8 @@ This work does not create another benchmark orchestrator around Harbor, modify C
   Evidence: review caught `const thinkingLevel = undefined`; the patch now honors `agentConfig.thinking`, and the runner pins the child frontmatter from the parent's selected reasoning. Live preflight retained two identities per profile—parent and child—and all four identities report the exact provider/model with `xhigh`.
 - Observation: Harbor task workspaces are not Git repositories by default, so a naive post-run `git diff HEAD` fails.
   Evidence: the first live preflight completed model calls but failed artifact capture with exit 129. Generated task images now create a root-protected Git directory at `/opt/cvdp-baseline` with a working-tree pointer in `/app`; the adapter captures intent-to-add, binary diff, and status through the protected baseline.
+- Observation: Harbor stores the conventional `/logs/artifacts` directory at `artifacts/logs/artifacts`, not directly below `artifacts`, and a model can generate/query a waveform in `/tmp` then remove it before final collection.
+  Evidence: diagnostic smoke `20260809T155016Z-1eaebab4` completed exactly four scientific cells but the first normalizer looked in the wrong artifact path; Luna treatment queried `/tmp/tb_axis_broadcast.vcd`, which was gone at final scan. The run remains immutable and rejected. Normalization now follows Harbor's manifest destination, the common runner snapshots `/app` and `/tmp` waveforms during execution, and the treatment wrapper copies each queried waveform beside its audit record.
 
 ## Decision Log
 
@@ -224,3 +226,5 @@ Plan revision note (2026-08-09): created the initial self-contained plan after r
 Plan revision note (2026-08-09 15:13Z): recorded completed and independently reviewed Milestone 1, the native Harbor credential-upload design that replaced an unsafe full-auth bind, resolved bundle/docs/adapter questions, and the remaining paid-session and multi-revision proof obligations.
 
 Plan revision note (2026-08-09 15:49Z): recorded completed Milestones 2–3, reviewer-driven delegated-thinking and exact-cell fixes, the successful content-bound live parent/subagent preflight for both models, and the Git-baseline artifact design discovered during live execution.
+
+Plan revision note (2026-08-09 16:07Z): recorded the rejected first four-cell diagnostic smoke, Harbor's actual conventional-artifact destination, and the live waveform snapshot/queried-file retention fixes required before the accepted smoke.

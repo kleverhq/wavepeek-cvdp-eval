@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -52,6 +53,25 @@ def main() -> int:
     finished_at = now()
     log = os.environ.get("WAVEPEEK_INVOCATION_LOG")
     if log:
+        paths = waveform_paths(sys.argv[1:])
+        retained = []
+        for value in paths:
+            source = Path(value)
+            if not source.is_file():
+                continue
+            digest = hashlib.sha256(source.read_bytes()).hexdigest()
+            destination = Path(log).parent / "waveforms-accessed" / f"{digest}-{source.name}"
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            if not destination.exists():
+                shutil.copyfile(source, destination)
+            retained.append(
+                {
+                    "source": value,
+                    "artifact": str(destination.relative_to(Path(log).parent)),
+                    "sha256": digest,
+                    "size": destination.stat().st_size,
+                }
+            )
         record = {
             "schema_version": 1,
             "started_at": started_at,
@@ -60,7 +80,8 @@ def main() -> int:
             "cwd": os.getcwd(),
             "argv": sys.argv[1:],
             "subcommand": next((arg for arg in sys.argv[1:] if not arg.startswith("-")), None),
-            "waveform_paths": waveform_paths(sys.argv[1:]),
+            "waveform_paths": paths,
+            "retained_waveforms": retained,
             "binary_sha256": hashlib.sha256(BINARY.read_bytes()).hexdigest(),
             "exit_status": result.returncode,
         }

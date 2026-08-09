@@ -16,10 +16,10 @@ class ResultNormalizationTests(unittest.TestCase):
                 "agent/pi.txt",
                 "agent/pi/sessions/main.jsonl",
                 "agent/trajectory-index.json",
-                "artifacts/final.patch",
-                "artifacts/agent-runtime.json",
-                "artifacts/main-session-stats.json",
-                "artifacts/waveforms.json",
+                "artifacts/logs/artifacts/final.patch",
+                "artifacts/logs/artifacts/agent-runtime.json",
+                "artifacts/logs/artifacts/main-session-stats.json",
+                "artifacts/logs/artifacts/waveforms.json",
                 "verifier/test-stdout.txt",
                 "verifier/reward.txt",
                 "config.json",
@@ -48,7 +48,7 @@ class ResultNormalizationTests(unittest.TestCase):
                 "exception_info": None,
             }
             (trial / "result.json").write_text(json.dumps(result))
-            (trial / "artifacts/wavepeek-invocations.jsonl").write_text(
+            (trial / "artifacts/logs/artifacts/wavepeek-invocations.jsonl").write_text(
                 json.dumps(
                     {
                         "started_at": "2026-01-01T00:00:01Z",

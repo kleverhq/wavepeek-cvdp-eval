@@ -14,7 +14,7 @@
       "tag": "cvdp-pi-agent:baseline"
     },
     "wavepeek": {
-      "id": "sha256:4fd3024ce4e222d3d7084727fe61f2ca27b3cf636e746adb7f3663a4a5fd9691",
+      "id": "sha256:97a5815fa11420db85f91a737ea0f7209c8cb00845be15bf2066464e2a4798ea",
       "tag": "cvdp-pi-agent:wavepeek-a27a96b557cb"
     }
   },

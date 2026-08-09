@@ -828,7 +828,7 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
         errors.append(f"expected {manifest['matrix']['trial_count']} trials, found {len(trial_dirs)}")
     attempt_counts: dict[tuple[str, str, str], int] = {}
     trials = []
-    meaningful = {"hierarchy", "signals", "get", "find", "eval"}
+    non_queries = {None, "help", "docs", "skill", "schema", "completion"}
     for trial_dir in trial_dirs:
         result = json.loads((trial_dir / "result.json").read_text())
         task_name = result["task_name"].split("/", 1)[-1]
@@ -848,21 +848,23 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
         attempt_counts[key] = attempt_counts.get(key, 0) + 1
         attempt = attempt_counts[key]
         agent_metadata = (result.get("agent_result") or {}).get("metadata") or {}
-        invocations = parse_jsonl_optional(trial_dir / "artifacts" / "wavepeek-invocations.jsonl")
+        artifact_prefix = Path("artifacts/logs/artifacts")
+        artifact_root = trial_dir / artifact_prefix
+        invocations = parse_jsonl_optional(artifact_root / "wavepeek-invocations.jsonl")
         successful = [
             record for record in invocations
             if record.get("exit_status") == 0
             and record.get("waveform_paths")
-            and record.get("subcommand") in meaningful
+            and record.get("subcommand") not in non_queries
         ]
         required = [
             "agent/pi.txt",
             "agent/pi/sessions/main.jsonl",
             "agent/trajectory-index.json",
-            "artifacts/final.patch",
-            "artifacts/agent-runtime.json",
-            "artifacts/main-session-stats.json",
-            "artifacts/waveforms.json",
+            "artifacts/logs/artifacts/final.patch",
+            "artifacts/logs/artifacts/agent-runtime.json",
+            "artifacts/logs/artifacts/main-session-stats.json",
+            "artifacts/logs/artifacts/waveforms.json",
             "verifier/test-stdout.txt",
             "verifier/reward.txt",
             "config.json",
@@ -900,15 +902,15 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
                 "subagents": agent_metadata.get("subagent_transcripts") or [],
                 "subagent_sessions": agent_metadata.get("subagent_sessions") or [],
             },
-            "patch": "artifacts/final.patch",
+            "patch": str(artifact_prefix / "final.patch"),
             "verifier_output": "verifier/test-stdout.txt",
-            "waveforms": "artifacts/waveforms.json",
+            "waveforms": str(artifact_prefix / "waveforms.json"),
             "wavepeek": {
                 "total_calls": len(invocations),
                 "successful_meaningful_calls": len(successful),
                 "compliant": bool(successful) if arm.startswith("wavepeek@") else None,
                 "first_successful_call": successful[0]["started_at"] if successful else None,
-                "audit": "artifacts/wavepeek-invocations.jsonl" if invocations else None,
+                "audit": str(artifact_prefix / "wavepeek-invocations.jsonl") if invocations else None,
             },
             "missing_evidence": missing,
         }

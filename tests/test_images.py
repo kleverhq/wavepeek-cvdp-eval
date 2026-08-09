@@ -55,6 +55,25 @@ class ImageTests(unittest.TestCase):
             self.assertGreaterEqual(record["duration_seconds"], 0)
             self.assertIn("binary_sha256", record)
 
+    def test_wrapper_retains_queried_waveform(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "test.vcd").write_text(
+                "$timescale 1ns $end\n$scope module top $end\n$var wire 1 ! clk $end\n"
+                "$upscope $end\n$enddefinitions $end\n#0\n0!\n#1\n1!\n"
+            )
+            result = docker(
+                "run", "--rm", "--user", f"{os.getuid()}:{os.getgid()}",
+                "-v", f"{directory}:/logs", "-e",
+                "WAVEPEEK_INVOCATION_LOG=/logs/audit.jsonl", self.treatment,
+                "wavepeek", "info", "--waves", "/logs/test.vcd", "--json",
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            record = json.loads((root / "audit.jsonl").read_text())
+            self.assertEqual(len(record["retained_waveforms"]), 1)
+            retained = root / record["retained_waveforms"][0]["artifact"]
+            self.assertEqual(retained.read_bytes(), (root / "test.vcd").read_bytes())
+
 
 if __name__ == "__main__":
     unittest.main()

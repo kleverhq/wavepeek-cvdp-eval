@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 from pathlib import Path
 
 CONFIG_ROOT = Path("/opt/cvdp-pi/config")
@@ -127,24 +128,42 @@ def send(process: subprocess.Popen[str], message: dict) -> None:
     process.stdin.flush()
 
 
-def retain_waveforms(workspace: Path, destination: Path) -> list[dict]:
-    retained = []
-    for source in sorted(workspace.rglob("*")):
-        if not source.is_file() or source.is_symlink() or source.suffix.lower() not in {".vcd", ".fst", ".fsdb"}:
-            continue
-        relative = source.relative_to(workspace)
-        target = destination / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, target)
-        retained.append(
-            {
-                "workspace_path": str(source),
-                "artifact_path": str(target.relative_to(Path('/logs/artifacts'))),
-                "size": target.stat().st_size,
-                "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
-            }
-        )
-    return retained
+def retain_waveforms(
+    roots: tuple[Path, ...],
+    destination: Path,
+    seen: set[tuple[str, str]],
+    retained: list[dict],
+) -> None:
+    for root in roots:
+        for source in sorted(root.rglob("*")):
+            if not source.is_file() or source.is_symlink() or source.suffix.lower() not in {".vcd", ".fst", ".fsdb"}:
+                continue
+            try:
+                data = source.read_bytes()
+            except OSError:
+                continue
+            digest = hashlib.sha256(data).hexdigest()
+            key = (str(source), digest)
+            if key in seen:
+                continue
+            target = destination / f"{digest}-{source.name}"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if not target.exists():
+                target.write_bytes(data)
+            seen.add(key)
+            retained.append(
+                {
+                    "source_path": str(source),
+                    "artifact_path": str(target.relative_to(Path('/logs/artifacts'))),
+                    "size": len(data),
+                    "sha256": digest,
+                }
+            )
+
+
+def watch_waveforms(stop: threading.Event, destination: Path, seen: set, retained: list) -> None:
+    while not stop.wait(0.25):
+        retain_waveforms((Path("/app"), Path("/tmp")), destination, seen, retained)
 
 
 def main() -> int:
@@ -196,6 +215,15 @@ def main() -> int:
         text=True,
         bufsize=1,
     )
+    waveform_stop = threading.Event()
+    retained_waveforms: list[dict] = []
+    seen_waveforms: set[tuple[str, str]] = set()
+    waveform_thread = threading.Thread(
+        target=watch_waveforms,
+        args=(waveform_stop, artifacts / "waveforms", seen_waveforms, retained_waveforms),
+        daemon=True,
+    )
+    waveform_thread.start()
     send(process, {"id": "task", "type": "prompt", "message": instruction})
 
     settled = False
@@ -235,6 +263,9 @@ def main() -> int:
     except subprocess.TimeoutExpired:
         process.kill()
         process.wait()
+    waveform_stop.set()
+    waveform_thread.join(timeout=2)
+    retain_waveforms((Path("/app"), Path("/tmp")), artifacts / "waveforms", seen_waveforms, retained_waveforms)
     stderr_file.close()
     if not settled:
         raise RuntimeError(f"Pi exited before agent_settled (status {process.returncode})")
@@ -248,7 +279,7 @@ def main() -> int:
         raise RuntimeError("Pi resolved a different reasoning level")
     (artifacts / "final-response.txt").write_text(records["final"]["data"].get("text") or "")
     write_json(artifacts / "main-session-stats.json", records["stats"]["data"], 0o644)
-    write_json(artifacts / "waveforms.json", retain_waveforms(Path('/app'), artifacts / "waveforms"), 0o644)
+    write_json(artifacts / "waveforms.json", retained_waveforms, 0o644)
     return 0
 
 
