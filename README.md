@@ -78,13 +78,28 @@ Continuation creates a new Harbor run with a content-hashed `parent_run` link; t
 
 ## Results
 
+The archive grows by one readable UTC-prefixed directory per run or live preflight:
+
+    experiments/
+      JOURNAL.jsonl
+      2026-08-09_160543Z_preflight_51062efd/
+        result.json
+        artifacts/
+      2026-08-09_160628Z_smoke_fbb99664/
+        analysis.md
+        result.json
+        tasks.json
+        artifacts/
+
+Static requirements and implementation records stay in `docs/`; experiment evidence never goes there.
+
 Inspect and verify a run with:
 
     just status latest
     just analyze latest
     just verify latest
 
-Each `runs/<run-id>/` directory contains the resolved manifest, unmodified Harbor job/trial trees, normalized `summary.json`, `analysis.json`, source archives, and exhaustive `run-checksums.json`. Every completed trial must retain:
+Each `experiments/<YYYY-MM-DD_HHMMSSZ_name_id>/` directory is one run or live preflight. Scientific experiments keep compact `analysis.md` and `result.json` beside `artifacts/`; their `artifacts/` contains the resolved manifest, unmodified Harbor job/trial trees, normalized `summary.json`, `analysis.json`, source archives, and exhaustive `run-checksums.json`. Live preflights instead keep `result.json` and the reusable evidence-hash record `preflight.json` beside their raw Harbor `artifacts/`. Rejected historical runs retain only the evidence that existed when they were rejected. Every completed scientific trial must retain:
 
 - Harbor config, lock, result, and logs;
 - main Pi event stream and native session;
@@ -98,8 +113,8 @@ Each `runs/<run-id>/` directory contains the resolved manifest, unmodified Harbo
 
 OAuth monetary cost is not invented. `reported_cost` remains unavailable; raw Pi catalog calculations are retained separately as `pi_calculated_cost` and are not billing evidence. Smoke analysis is explicitly labeled infrastructure evidence, not a causal performance claim.
 
-`docs/EXPERIMENT_JOURNAL.jsonl` is append-only and points to each content-addressed run manifest/checksum set. Generated run payloads are ignored by Git; compact proofs and conclusions are versioned.
+`experiments/JOURNAL.jsonl` is append-only and points to each content-addressed manifest/checksum set. Generated payloads under each `artifacts/` directory are ignored by Git; compact proofs and conclusions remain versioned in the same experiment directory.
 
-The accepted demonstration is run `20260809T160628Z-fbb99664`: all four infrastructure cells completed, both baselines failed the hidden verifier, and both WavePeek treatment cells passed after 13 audited calls each. See `docs/SMOKE_RESULT.json`, `docs/SMOKE_ANALYSIS.md`, and `docs/PREFLIGHT_RESULT.json`. This is an integration proof, not a causal performance claim.
+The accepted demonstration is `experiments/2026-08-09_160628Z_smoke_fbb99664/`: all four infrastructure cells completed, both baselines failed the hidden verifier, and both WavePeek treatment cells passed after 13 audited calls each. Its bound preflight is `experiments/2026-08-09_160543Z_preflight_51062efd/`. This is an integration proof, not a causal performance claim.
 
 Never place CVDP golden patches, hidden tests, credentials, or generated `selection/subset.jsonl` in agent-visible workspaces. Harbor mounts hidden tests only after agent execution.

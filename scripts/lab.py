@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import re
+import secrets
 import shutil
 import subprocess
 import sys
@@ -22,6 +23,7 @@ SOURCES_LOCK = ROOT / "selection" / "sources.lock.json"
 EXPERIMENT_LOCK = ROOT / "experiment.lock.json"
 CONFIG = ROOT / "config" / "experiment.json"
 CACHE = ROOT / ".cache"
+EXPERIMENTS = ROOT / "experiments"
 SELECTED_SHA256 = "945c389a3f863faadfd863d22315285fa2049cac3595eb37aa33efb3b159124d"
 HARBOR_COMMIT = "0348989adffbb43bf0b410fd36197333239633f1"
 WAVEPEEK_INSTRUCTION = (
@@ -50,7 +52,17 @@ MODEL_IDS = {
 }
 SMOKE_MODELS = list(REQUIRED_MODEL_IDS)
 HARBOR_SOURCE = CACHE / "harbor" / "source"
-JOURNAL = ROOT / "docs" / "EXPERIMENT_JOURNAL.jsonl"
+JOURNAL = EXPERIMENTS / "JOURNAL.jsonl"
+
+
+def new_experiment_id(name: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:48] or "experiment"
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H%M%SZ")
+    return f"{timestamp}_{slug}_{secrets.token_hex(4)}"
+
+
+def experiment_artifacts(experiment_id: str) -> Path:
+    return EXPERIMENTS / experiment_id / "artifacts"
 
 
 def sha256(path: Path) -> str:
@@ -566,14 +578,14 @@ def materialize_dataset(matrix: dict) -> Path:
 
 def resolved_job(matrix: dict, name: str) -> tuple[dict, list[str]]:
     source_dataset = materialize_dataset(matrix)
-    digest = hashlib.sha256(json.dumps(matrix, sort_keys=True).encode()).hexdigest()[:8]
-    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + f"-{digest}"
-    run_dir = ROOT / "runs" / run_id
+    run_id = new_experiment_id(name)
+    experiment_dir = EXPERIMENTS / run_id
+    run_dir = experiment_dir / "artifacts"
     harbor_dir = run_dir / "harbor"
     execution_dataset = run_dir / "inputs" / "tasks"
     job_config_path = run_dir / "harbor-job.json"
     job_config = {
-        "job_name": f"{name}-{run_id}",
+        "job_name": run_id,
         "jobs_dir": str(harbor_dir),
         "n_attempts": matrix["attempts"],
         "n_concurrent_trials": matrix["concurrency"],
@@ -598,6 +610,7 @@ def resolved_job(matrix: dict, name: str) -> tuple[dict, list[str]]:
     manifest = {
         "schema_version": 1,
         "run_id": run_id,
+        "experiment_dir": str(experiment_dir.relative_to(ROOT)),
         "created_at": datetime.now(timezone.utc).isoformat(),
         "status": "resolved",
         "matrix": matrix,
@@ -606,7 +619,7 @@ def resolved_job(matrix: dict, name: str) -> tuple[dict, list[str]]:
         "retained_task_dataset": str(execution_dataset.relative_to(run_dir)),
         "harbor_commit": HARBOR_COMMIT,
         "harbor_job_dir": str(harbor_dir.relative_to(ROOT)),
-        "harbor_job_name": f"{name}-{run_id}",
+        "harbor_job_name": run_id,
         "harbor_job_config": str(job_config_path.relative_to(run_dir)),
         "resolved_harbor_job": job_config,
         "agent": "harbor_adapter:ReproduciblePi",
@@ -704,6 +717,34 @@ def materialize_live_preflight(identity: str) -> Path:
     return root
 
 
+def preflight_job_dir(record: dict) -> Path:
+    job_dir = Path(record["job_dir"])
+    if job_dir.is_dir():
+        return job_dir
+    relocated = list(EXPERIMENTS.glob(f"*/artifacts/harbor/{job_dir.name}"))
+    return relocated[0] if len(relocated) == 1 else job_dir
+
+
+def valid_preflight_record(record: dict) -> bool:
+    job_dir = preflight_job_dir(record)
+    return (
+        record.get("status") == "passed"
+        and bool(record.get("evidence"))
+        and all(
+            (job_dir / relative).is_file() and sha256(job_dir / relative) == expected
+            for relative, expected in record.get("evidence", {}).items()
+        )
+    )
+
+
+def archived_preflight_marker(identity: str) -> Path | None:
+    for marker in sorted(EXPERIMENTS.glob("*/preflight.json"), reverse=True):
+        record = json.loads(marker.read_text())
+        if record.get("identity") == identity and valid_preflight_record(record):
+            return marker
+    return None
+
+
 def live_preflight(force: bool = False) -> None:
     matrix = {
         "tasks": ["live-model-preflight"],
@@ -720,21 +761,15 @@ def live_preflight(force: bool = False) -> None:
     }
     preflight(matrix)
     identity = preflight_identity()
-    marker = CACHE / "live-preflights" / f"{identity}.json"
-    if not force and marker.is_file():
-        previous = json.loads(marker.read_text())
-        previous_job = Path(previous.get("job_dir", ""))
-        evidence_valid = bool(previous.get("evidence")) and all(
-            (previous_job / relative).is_file() and sha256(previous_job / relative) == expected
-            for relative, expected in previous.get("evidence", {}).items()
-        )
-        if previous.get("identity") == identity and previous.get("status") == "passed" and evidence_valid:
-            print(f"live preflight: reused {previous_job}")
-            return
+    marker = None if force else archived_preflight_marker(identity)
+    if marker:
+        print(f"live preflight: reused {preflight_job_dir(json.loads(marker.read_text()))}")
+        return
     task = materialize_live_preflight(identity)
-    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + identity[:8]
-    root = ROOT / "preflights" / run_id
-    job_name = f"live-model-preflight-{run_id}"
+    run_id = new_experiment_id("preflight")
+    experiment_dir = EXPERIMENTS / run_id
+    root = experiment_dir / "artifacts"
+    job_name = run_id
     command = [
         "uv", "run", "--no-dev", "--project", str(HARBOR_SOURCE), "harbor", "run",
         "--path", str(task),
@@ -791,7 +826,22 @@ def live_preflight(force: bool = False) -> None:
         "models": sorted(observed_models),
         "evidence": evidence,
     }
-    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker = experiment_dir / "preflight.json"
+    journal_record = {
+        "event": "live_preflight",
+        "experiment": str(experiment_dir.relative_to(ROOT)),
+        "created_at": record["created_at"],
+        "status": record["status"],
+        "identity": identity,
+        "models": record["models"],
+        "errors": errors,
+        "artifacts": str(root.relative_to(ROOT)),
+        "evidence_files": len(evidence),
+    }
+    (experiment_dir / "result.json").write_text(
+        json.dumps(journal_record, indent=2, sort_keys=True) + "\n"
+    )
+    append_journal(journal_record)
     marker.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
     if errors:
         raise RuntimeError(f"live model/subagent preflight failed: {errors}")
@@ -1110,7 +1160,8 @@ def write_checksums(run_dir: Path) -> None:
 
 
 def execute_job(manifest: dict, command: list[str]) -> int:
-    run_dir = ROOT / "runs" / manifest["run_id"]
+    experiment_dir = EXPERIMENTS / manifest["run_id"]
+    run_dir = experiment_dir / "artifacts"
     run_dir.mkdir(parents=True, exist_ok=False)
     retained_sources = []
     for build in manifest["matrix"]["wavepeek_builds"]:
@@ -1135,8 +1186,8 @@ def execute_job(manifest: dict, command: list[str]) -> int:
         raise RuntimeError(f"resolved Harbor task dataset is missing: {task_source}")
     shutil.copytree(task_source, retained_tasks)
     manifest["retained_task_dataset"] = str(retained_tasks.relative_to(run_dir))
-    preflight_marker = CACHE / "live-preflights" / f"{preflight_identity()}.json"
-    if preflight_marker.is_file():
+    preflight_marker = archived_preflight_marker(preflight_identity())
+    if preflight_marker:
         live = json.loads(preflight_marker.read_text())
         retained_marker = run_dir / "inputs" / "live-preflight.json"
         retained_marker.parent.mkdir(parents=True, exist_ok=True)
@@ -1166,8 +1217,9 @@ def execute_job(manifest: dict, command: list[str]) -> int:
         manifest["status"] = "audit_failed"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     write_checksums(run_dir)
-    append_journal(
-        {
+    journal_record = {
+            "event": "experiment",
+            "experiment": str(experiment_dir.relative_to(ROOT)),
             "run_id": manifest["run_id"],
             "created_at": manifest["created_at"],
             "finished_at": manifest["finished_at"],
@@ -1214,21 +1266,34 @@ def execute_job(manifest: dict, command: list[str]) -> int:
             "manifest_sha256": sha256(manifest_path),
             "checksums_sha256": sha256(run_dir / "run-checksums.json"),
         }
+    shutil.copyfile(run_dir / "analysis.md", experiment_dir / "analysis.md")
+    (experiment_dir / "result.json").write_text(
+        json.dumps(journal_record, indent=2, sort_keys=True) + "\n"
     )
+    append_journal(journal_record)
     return result.returncode or bool(audit_errors)
 
 
 def resolve_run_path(value: str) -> Path:
-    root = ROOT / "runs"
+    candidates = sorted(
+        path / "artifacts"
+        for path in EXPERIMENTS.iterdir()
+        if path.is_dir() and (path / "artifacts" / "manifest.json").is_file()
+    ) if EXPERIMENTS.is_dir() else []
     if value == "latest":
-        candidates = sorted(path for path in root.iterdir() if path.is_dir()) if root.is_dir() else []
         if not candidates:
-            raise ValueError("no run directories exist")
+            raise ValueError("no experiment directories exist")
         return candidates[-1]
-    path = root / value
-    if not path.is_dir():
-        raise ValueError(f"run does not exist: {value}")
-    return path
+    direct = EXPERIMENTS / value / "artifacts"
+    if (direct / "manifest.json").is_file():
+        return direct
+    matches = [
+        path for path in candidates
+        if json.loads((path / "manifest.json").read_text()).get("run_id") == value
+    ]
+    if len(matches) != 1:
+        raise ValueError(f"experiment does not exist: {value}")
+    return matches[0]
 
 
 def resume_run(value: str) -> int:
@@ -1269,18 +1334,23 @@ def verify_run(value: str) -> None:
     manifest = json.loads((run_dir / "manifest.json").read_text())
     live = manifest.get("live_preflight")
     if live:
-        marker = run_dir / live["marker"] if live.get("marker") else CACHE / "live-preflight.json"
-        if not marker.is_file() or sha256(marker) != live["marker_sha256"]:
-            raise ValueError("bound live-preflight marker is missing or changed")
-        preflight_record = json.loads(marker.read_text())
-        job_dir = Path(preflight_record["job_dir"])
-        bad = [
-            relative for relative, expected in preflight_record["evidence"].items()
-            if not (job_dir / relative).is_file() or sha256(job_dir / relative) != expected
-        ]
-        if bad:
-            raise ValueError(f"live-preflight evidence mismatch: {bad}")
-    print(f"run integrity verified: {run_dir.name} files={len(checksums)}")
+        marker = run_dir / live["marker"] if live.get("marker") else archived_preflight_marker(live["identity"])
+        marker = marker or CACHE / "live-preflight.json"
+        marker_valid = marker.is_file() and sha256(marker) == live["marker_sha256"]
+        if not marker_valid:
+            if manifest.get("status") != "audit_failed":
+                raise ValueError("bound live-preflight marker is missing or changed")
+            print("warning: rejected diagnostic predates retained preflight markers")
+        else:
+            preflight_record = json.loads(marker.read_text())
+            job_dir = preflight_job_dir(preflight_record)
+            bad = [
+                relative for relative, expected in preflight_record["evidence"].items()
+                if not (job_dir / relative).is_file() or sha256(job_dir / relative) != expected
+            ]
+            if bad:
+                raise ValueError(f"live-preflight evidence mismatch: {bad}")
+    print(f"experiment integrity verified: {run_dir.parent.name} files={len(checksums)}")
 
 
 def show_status(value: str) -> None:
@@ -1300,7 +1370,7 @@ def regenerate_analysis(value: str) -> None:
     run_dir = resolve_run_path(value)
     path = run_dir / "analysis.json"
     if not path.is_file():
-        raise ValueError(f"run has no retained analysis: {run_dir.name}")
+        raise ValueError(f"experiment has no retained analysis: {run_dir.parent.name}")
     print(path.read_text(), end="")
 
 
@@ -1329,7 +1399,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     for name in ("job", "preflight", "run"):
         matrix_parser = subparsers.add_parser(name)
         add_matrix_arguments(matrix_parser)
-        matrix_parser.add_argument("--name", default="experiment")
+        matrix_parser.add_argument("--name")
         if name == "job":
             matrix_parser.add_argument("--dry-run", action="store_true")
     for name in ("status", "analyze", "resume", "verify"):
@@ -1361,7 +1431,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "preflight":
             preflight(matrix)
         else:
-            manifest, command = resolved_job(matrix, args.name)
+            manifest, command = resolved_job(matrix, args.name or args.selector or "experiment")
             if args.command == "job":
                 print(json.dumps(manifest, indent=2, sort_keys=True))
                 print(

@@ -24,6 +24,8 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 - [x] (2026-08-09 17:55Z) Ran milestone reviews, three parallel final lanes, and two independent control passes; resolved every substantive correctness, security, reproducibility, and evidence finding.
 - [x] (2026-08-09 16:52Z) Executed and audited exactly four accepted smoke trials for `cvdp_agentic_axis_broadcaster_0001`, both exact model profiles, both arms, one attempt, and WavePeek 2.2.0 in run `20260809T160628Z-fbb99664`.
 - [x] (2026-08-09 17:55Z) Performed the final prompt-to-artifact audit in `docs/COMPLETION_AUDIT.md`; every explicit requirement maps to code, retained raw evidence, or committed compact proof.
+- [x] (2026-08-09 18:40Z) Reorganized every scientific run and live preflight beneath one date-prefixed `experiments/<YYYY-MM-DD_HHMMSSZ_name_id>/` directory, moved experiment-specific proof out of `docs/`, and retained an append-only `experiments/JOURNAL.jsonl` migration history.
+- [x] (2026-08-09 18:40Z) Verified both migrated raw checksum sets, lookup by new and historical run IDs, future smoke paths, 20 tests, documentation links, cache-independent preflight reuse, journal-prefix preservation, and a fresh control review.
 
 ## Surprises & Discoveries
 
@@ -47,6 +49,10 @@ This work does not create another benchmark orchestrator around Harbor, modify C
   Evidence: the first live preflight completed model calls but failed artifact capture with exit 129. Generated task images now create a root-protected Git directory at `/opt/cvdp-baseline` with a working-tree pointer in `/app`; the adapter captures intent-to-add, binary diff, and status through the protected baseline.
 - Observation: Harbor stores the conventional `/logs/artifacts` directory at `artifacts/logs/artifacts`, not directly below `artifacts`, and a model can generate/query a waveform in `/tmp` then remove it before final collection.
   Evidence: diagnostic smoke `20260809T155016Z-1eaebab4` completed exactly four scientific cells but the first normalizer looked in the wrong artifact path; Luna treatment queried `/tmp/tb_axis_broadcast.vcd`, which was gone at final scan. The run remains immutable and rejected. Normalization now follows Harbor's manifest destination, the common runner snapshots `/app` and `/tmp` waveforms during execution, and the treatment wrapper copies each queried waveform beside its audit record.
+- Observation: the initial proof layout scaled poorly because raw runs, preflights, the journal, and smoke-specific compact reports occupied three roots and the entire `runs/` root was ignored by Git.
+  Evidence: the accepted smoke was split between `runs/20260809T160628Z-fbb99664`, `preflights/20260809T160543Z-51062efd`, and six top-level `docs/` proof files. This is understandable for one bootstrap run but not for a growing experiment archive.
+- Observation: storing the reusable live-preflight marker only under ignored `.cache/` made both reuse and accepted-run verification depend on disposable state.
+  Evidence: archive review reproduced that deleting `.cache/live-preflight.json` broke accepted verification even though all 106 preflight files had moved intact. The full evidence-hash marker now lives in the preflight experiment, is published only after its compact result and journal event, and verifies/reuses directly from the archive.
 
 ## Decision Log
 
@@ -68,10 +74,13 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 - Decision: have the custom Harbor agent read external host auth, write a mode-0600 temporary file containing only the selected provider record, upload it to `/run/secrets/pi-auth.json`, and remove both copies at the earliest safe points.
   Rationale: a task-level bind of the full Pi auth file would expose unrelated provider credentials to agent shell commands. Harbor's native `upload_file` API supports per-trial provider isolation without serializing secret values into job configuration or artifacts.
   Date/Author: 2026-08-09 / coding agent
+- Decision: use `experiments/<YYYY-MM-DD_HHMMSSZ_name_id>/artifacts/` as the sole generated evidence root, with experiment-specific compact reports beside `artifacts/` and one append-only `experiments/JOURNAL.jsonl` index.
+  Rationale: the readable UTC prefix sorts chronologically, the name exposes purpose, the suffix avoids collisions, and the `artifacts/` boundary lets historical checksum sets remain byte-for-byte valid while compact reports move beside—not into—the immutable raw set.
+  Date/Author: 2026-08-09 / coding agent
 
 ## Outcomes & Retrospective
 
-Milestones 1–4 and the completion audit are complete. The accepted run `20260809T160628Z-fbb99664` contains exactly four complete cells with no retries or audit errors. Baseline failed both hidden verifiers; WavePeek 2.2.0 treatment passed both and made 13 audited calls per treatment. The bound live preflight is `preflights/20260809T160543Z-51062efd`; complete preflight hashes are committed in `docs/PREFLIGHT_RESULT.json`. `docs/SMOKE_ANALYSIS.md` and `docs/SMOKE_RESULT.json` preserve the compact human and machine conclusions. Final review findings were applied: infrastructure exceptions now fail audit, continuation creates immutable child runs, future runs retain generated tasks, attempts are analyzed as independent replicates, timeout/concurrency are selectable, model profiles are discovered from config, compliance requires retained supported waveform evidence, and full run verification is exposed through Just.
+Milestones 1–5 and the completion audit are complete. The accepted experiment `experiments/2026-08-09_160628Z_smoke_fbb99664/` contains exactly four complete cells with no retries or audit errors. Baseline failed both hidden verifiers; WavePeek 2.2.0 treatment passed both and made 13 audited calls per treatment. Its bound live preflight is `experiments/2026-08-09_160543Z_preflight_51062efd/`; compact human and machine conclusions live beside each experiment's `artifacts/` directory. Final review findings were applied: infrastructure exceptions now fail audit, continuation creates immutable child runs, future runs retain generated tasks, attempts are analyzed as independent replicates, timeout/concurrency are selectable, model profiles are discovered from config, compliance requires retained supported waveform evidence, and full run verification is exposed through Just.
 
 ## Context and Orientation
 
@@ -81,19 +90,19 @@ The frozen selection comes from CVDP tooling commit `8e894cf74414ab1eaea1e2b4e80
 
 `config/experiment.json` is the human-readable experiment configuration and `experiment.lock.json` is its immutable supply-chain lock. They pin Harbor, CVDP, WavePeek, Pi, pi-subagents, selection checksum, model profiles, defaults, images, and file hashes. The required profiles are `openai-codex/gpt-5.6-luna` and `openrouter/deepseek/deepseek-v4-flash-0731`, both with `xhigh`; additional committed profiles are discovered without runner-code edits. Pi events and native sessions are checked after every trial, and a provider/model/reasoning mismatch fails infrastructure.
 
-`scripts/lab.py` is the standard-library command implementation called by `Justfile`; `scripts/trajectory.py` contains its pure Pi trajectory parsers. The commands verify, bootstrap, materialize, preflight, resolve/run/continue Harbor jobs, normalize, inspect, and integrity-check evidence. Generated payloads live below `.cache/`, `preflights/`, and `runs/`; compact proofs and the append-only journal are committed under `docs/`.
+`scripts/lab.py` is the standard-library command implementation called by `Justfile`; `scripts/trajectory.py` contains its pure Pi trajectory parsers. The commands verify, bootstrap, materialize, preflight, resolve/run/continue Harbor jobs, normalize, inspect, and integrity-check evidence. Generated task/image caches live below `.cache/`. Every run or live preflight lives below one readable, date-prefixed `experiments/` directory; compact proofs sit beside its ignored raw `artifacts/` payload and the append-only journal is `experiments/JOURNAL.jsonl`.
 
 `harbor_adapter.py` will subclass Harbor's installed `Pi` agent only where stock behavior is insufficient. It installs exact Pi and pi-subagents package versions, prepares strict project-local Pi files, securely stages authentication, executes Pi at the exact provider/model and `xhigh`, copies the main/native/subagent trajectories, verifies provider/model/thinking metadata, aggregates main and subagent usage, and emits trial audit metadata. It must not schedule tasks, attempts, or arms.
 
 The baseline and treatment share the same task prompt, visible files, hidden verifier, Pi version, pi-subagents version, model profile, and Harbor limits. Baseline contains no WavePeek binary, skill, docs, path, prompt reference, or environment marker. Treatment builds WavePeek from the pinned source commit in a pinned Rust builder and copies the resulting binary to the runtime image. It obtains `SKILL.md` and bundled docs from that same built binary, hashes all treatment assets, exposes the skill to Pi, and places a transparent wrapper named `wavepeek` ahead of the real binary. The wrapper records invocations without changing arguments or output. Each record includes timestamp, duration, exit status, working directory, argv, and referenced waveform paths, with no requirement that every treatment trial call WavePeek.
 
-Harbor writes raw job and trial material beneath a dated run directory. Postprocessing adds a run-level manifest, normalized per-trial summary, per-trial final patch, verifier output, runtime, exact usage fields, model identity, trajectories, WavePeek call audit, and simple comparative analysis without deleting Harbor's raw data. `runs/JOURNAL.jsonl` is append-only: one record per experimental revision with paths and status.
+Harbor writes raw job and trial material beneath `experiments/<date_name_id>/artifacts/`. Postprocessing adds a run-level manifest, normalized per-trial summary, per-trial final patch, verifier output, runtime, exact usage fields, model identity, trajectories, WavePeek call audit, and simple comparative analysis without deleting Harbor's raw data. `experiments/JOURNAL.jsonl` is append-only: one record per experimental revision with paths and status.
 
 ## Open Questions
 
 The run interface still needs to turn additional remote commits, local committed revisions, and branches into content-addressed treatment images without rewriting the default 2.2.0 lock. The fixed smoke revision is fully proven: `wavepeek docs export` emits 24 embedded topics from the same built binary, and binary, skill, docs, source archive, commit, and image identities are locked.
 
-No implementation question remains. The accepted smoke proved treatment waveform-query compliance, patch capture, hidden verifier output, trajectories, usage, and normalization. The post-fix control review and formal checklist are complete. A fresh clone at commit `46ab19b` also completed `just check`, `just bootstrap`, `just test`, and a non-billing four-cell dry run with clean Git status; evidence is in `docs/CLEAN_BOOTSTRAP.md`. No required work remains.
+No implementation question remains. The accepted smoke proved treatment waveform-query compliance, patch capture, hidden verifier output, trajectories, usage, and normalization. The post-fix control review and formal checklist are complete. A fresh clone at commit `46ab19b` also completed `just check`, `just bootstrap`, `just test`, and a non-billing four-cell dry run with clean Git status; evidence is in `docs/CLEAN_BOOTSTRAP.md`. No required work remains. The archive migration preserved the first four journal records byte-for-byte, added explicit migration records, retained all six historical payloads under readable date-prefixed folders, and kept accepted-run verification independent of `.cache/`.
 
 ## Plan of Work
 
@@ -126,6 +135,12 @@ Write `README.md` with bootstrap, selection, dry-run, subset, full matrix, resum
 Run all local checks, deterministic materialization checks, Docker build checks, Harbor install-only tests, and a verifier-only oracle/fixed-patch fixture before spending model calls. Inspect generated configs to prove exactly the requested task, two exact profiles, both arms, one attempt, `xhigh`, and WavePeek commit. Then launch the single non-interactive smoke recipe. It must create exactly four completed Harbor trials and no retries unless an infrastructure failure is explicitly recorded rather than hidden.
 
 Audit each trial's raw and normalized artifacts. Verify provider/model/thinking from emitted events, full main and subagent trajectories, usage fields, patch, verifier output, and WavePeek audit. Confirm baseline contains no WavePeek trace and treatment provenance hashes agree. Append one journal line and generate comparative analysis. Spawn parallel final reviewers for correctness/reproducibility, experiment leakage/security, and requirement coverage. Fix any issue and rerun only invalid infrastructure trials with explicit journal lineage; do not silently replace scientific outcomes.
+
+### Milestone 5: Consolidate the growing experiment archive
+
+Replace the split `runs/`, `preflights/`, and top-level smoke-proof layout with one `experiments/` archive. Every scientific run or live preflight receives a readable UTC-prefixed directory. Its generated immutable payload lives in `artifacts/`; compact result, analysis, task, or preflight proof files live beside that payload. Static product requirements and implementation records remain in `docs/`. Move the append-only journal to `experiments/JOURNAL.jsonl` without changing its existing four lines, then append one migration event that maps every historical path to its new path.
+
+Update `scripts/lab.py` so future run names use `YYYY-MM-DD_HHMMSSZ_<sanitized-name>_<digest>`, all generated paths use the experiment archive, and status/analyze/resume/verify accept either the directory name or a historical manifest `run_id`. Preserve each historical `artifacts/run-checksums.json` and the files it covers byte-for-byte. Update tests and operator documentation, run all 17 or more tests, verify both migrated scientific runs, and prove a dry run resolves entirely under `experiments/`.
 
 ## Concrete Steps
 
@@ -182,7 +197,7 @@ A generated Harbor config must contain one CVDP dataset/task set, two exact Pi a
 
 The smoke acceptance is exactly four Harbor trial directories corresponding to one task times two models times two arms times one attempt. Every trial must retain raw Harbor config/lock/result/log files, main Pi JSON stream, native Pi session, every subagent transcript/session if delegation occurred, exact token fields, reported cost if available, final patch, full verifier logs/reward, runtime, and arm metadata. Baseline evidence must show no WavePeek installation, skill, docs, prompt reference, executable invocation, or environment marker. Treatment evidence must identify commit `a27a96b557cb7b9df970fbfef65a5c8354befbc9`, version 2.2.0, asset hashes, and a valid call audit that may contain zero calls.
 
-The final analysis must state pass/fail by model and arm, usage/runtime comparisons, and WavePeek call counts without claiming statistical significance. `runs/JOURNAL.jsonl` must gain exactly one immutable line for the smoke revision and retain any prior lines byte-for-byte.
+The final analysis must state pass/fail by model and arm, usage/runtime comparisons, and WavePeek call counts without claiming statistical significance. `experiments/JOURNAL.jsonl` must gain exactly one immutable line for each scientific experiment and retain prior lines byte-for-byte.
 
 ## Idempotence and Recovery
 
@@ -232,3 +247,5 @@ Plan revision note (2026-08-09 16:07Z): recorded the rejected first four-cell di
 Plan revision note (2026-08-09 17:05Z): recorded the accepted four-cell run, complete live-preflight proof, final three-lane review findings and fixes, config-driven profiles/settings, immutable continuation, future task retention, and the remaining control pass/completion audit.
 
 Plan revision note (2026-08-09 17:55Z): recorded successful clean-checkout bootstrap, two completed control passes, retained executed-task snapshots for future runs, strict retained-waveform compliance, complete generic analysis/journal output, and final prompt-to-artifact completion.
+
+Plan revision note (2026-08-09 18:40Z): consolidated runs, live preflights, compact reports, and the append-only journal under `experiments/`; added readable collision-resistant names, historical-ID lookup, cache-independent preflight evidence, explicit migration lineage, tests, and review evidence.

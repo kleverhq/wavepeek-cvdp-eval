@@ -1,8 +1,7 @@
 .cache/
 artifacts/
 jobs/
-runs/
-preflights/
+experiments/*/artifacts/
 __pycache__/
 *.pyc
 agent/.build/

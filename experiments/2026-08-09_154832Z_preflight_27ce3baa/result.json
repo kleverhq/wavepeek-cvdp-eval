@@ -1,0 +1,13 @@
+{
+  "artifacts": "experiments/2026-08-09_154832Z_preflight_27ce3baa/artifacts",
+  "errors": 0,
+  "event": "live_preflight",
+  "experiment": "experiments/2026-08-09_154832Z_preflight_27ce3baa",
+  "finished_at": "2026-08-09T18:49:08.568506",
+  "historical_job_name": "live-model-preflight-20260809T154832Z-27ce3baa",
+  "retries": 0,
+  "schema_version": 1,
+  "started_at": "2026-08-09T18:48:33.367792",
+  "status": "passed",
+  "trials": 2
+}

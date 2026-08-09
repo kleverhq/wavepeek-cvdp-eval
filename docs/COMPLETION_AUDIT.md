@@ -4,7 +4,7 @@ Audit date: 2026-08-09. Accepted smoke: `20260809T160628Z-fbb99664`. Rejected di
 
 ## 1. Purpose and orchestration boundary
 
-- **Harbor is the outer framework.** `runs/20260809T160628Z-fbb99664/manifest.json` records one `harbor run` command at pinned commit `0348989adffbb43bf0b410fd36197333239633f1`. It passes task dataset, custom Pi adapter, two models, attempts, concurrency, zero retries, output directory, and job name in one invocation.
+- **Harbor is the outer framework.** `experiments/2026-08-09_160628Z_smoke_fbb99664/artifacts/manifest.json` records one `harbor run` command at pinned commit `0348989adffbb43bf0b410fd36197333239633f1`. It passes task dataset, custom Pi adapter, two models, attempts, concurrency, zero retries, output directory, and job name in one invocation.
 - **No second task/attempt scheduler exists.** `scripts/lab.py` resolves selectors and materializes Harbor tasks, then invokes Harbor once. Harbor's job/trial config, lock, result, logs, verifier and random trial names are retained below the run's `harbor/` tree.
 - **Pi delegation uses pi-subagents.** `agent/Dockerfile`, `agent/patch-pi-subagents.py`, `agent/common/general-purpose.md`, and `experiment.lock.json` pin pi-subagents commit `2966cd5a33c0640de9698b56a39c11f83207a835`. No custom child-agent protocol is implemented.
 
@@ -22,7 +22,7 @@ Audit date: 2026-08-09. Accepted smoke: `20260809T160628Z-fbb99664`. Rejected di
 - **Profiles are config-driven.** `scripts/lab.py` discovers all committed model JSON files; `harbor_adapter.py` validates the selected provider/model/reasoning against those files and sends the complete non-secret profile to the runner. Additional profiles, including different reasoning levels, require config/lock updates, not runner branching; the resolved Harbor JobConfig carries reasoning per agent.
 - **Main and child identity fail closed.** The adapter validates every assistant event and every native main/child session against exact provider/model/reasoning. An unavailable or substituted model raises infrastructure failure.
 - **Only `general-purpose` delegation is exposed.** Project-local defaults, Explore, Plan, unknown fallback, scheduling and nested extension loading are disabled. The patched extension honors only frontmatter thinking, generated from the selected parent reasoning; child model remains inherited.
-- **Live proof exists.** `docs/PREFLIGHT_RESULT.json` hashes all 106 files from preflight `20260809T160543Z-51062efd`. Each model's parent called one `general-purpose` child; parent and child reported the same exact provider/model and `xhigh`, with main event stream, native sessions, child transcript/session and usage retained.
+- **Live proof exists.** `experiments/2026-08-09_160543Z_preflight_51062efd/result.json` hashes all 106 files from preflight `20260809T160543Z-51062efd`. Each model's parent called one `general-purpose` child; parent and child reported the same exact provider/model and `xhigh`, with main event stream, native sessions, child transcript/session and usage retained.
 
 ## 4. Arms, fairness and WavePeek provenance
 
@@ -47,15 +47,15 @@ Audit date: 2026-08-09. Accepted smoke: `20260809T160628Z-fbb99664`. Rejected di
 - **Usage is exact and separated.** Summary retains main, per-child and total input/output/cache-read/cache-write values. `reportedCost` is null; Pi catalog calculations are separately labeled `piCalculatedCost`, not billing evidence.
 - **Patch and verifier output exist for all four cells.** `missing_evidence` is empty and `infrastructure_status` is complete in `summary.json`; benchmark reward remains separate from infrastructure state.
 - **WavePeek audit is complete.** Each treatment made 13 calls, with 9/11 successful meaningful queries respectively and retained query files. Baselines made zero calls.
-- **Run identity and source are retained.** Manifest records all source/tool/image/profile hashes and a content-addressed WavePeek source tar. Future runs execute from and checksum `runs/<id>/inputs/tasks`; for the accepted run, `docs/SMOKE_TASKS.json` records post-run deterministic archives whose Harbor content digests exactly match every accepted trial lock.
+- **Run identity and source are retained.** Manifest records all source/tool/image/profile hashes and a content-addressed WavePeek source tar. Future runs execute from and checksum `experiments/<date_name_id>/artifacts/inputs/tasks`; for the accepted run, `experiments/2026-08-09_160628Z_smoke_fbb99664/tasks.json` records post-run deterministic archives whose Harbor content digests exactly match every accepted trial lock.
 - **Output integrity is checkable.** `run-checksums.json` covers 230 accepted files. `python3 scripts/lab.py verify 20260809T160628Z-fbb99664` recomputed the complete file set/hashes and bound preflight proof successfully.
 
 ## 7. Analysis and journal
 
 - **Machine analysis exists.** Accepted `analysis.json` contains all cells and model comparisons; attempts are treated as independent replicates in current code rather than arbitrarily paired.
-- **Human analysis exists.** `docs/SMOKE_ANALYSIS.md` covers purpose, selection, results, usage/runtime, WavePeek total duration, trajectory/delegation differences, conclusions, limitations and raw/checksum pointers.
-- **Compact machine proof exists.** `docs/SMOKE_RESULT.json`, `docs/PREFLIGHT_RESULT.json` and `docs/SMOKE_TASKS.json` preserve accepted outcomes and immutable pointers while large payloads remain ignored.
-- **Journal is append-only.** `docs/EXPERIMENT_JOURNAL.jsonl` retains the rejected diagnostic, accepted raw run event, and enriched acceptance event. The rejected run is not silently relabeled or deleted.
+- **Human analysis exists.** `experiments/2026-08-09_160628Z_smoke_fbb99664/analysis.md` covers purpose, selection, results, usage/runtime, WavePeek total duration, trajectory/delegation differences, conclusions, limitations and raw/checksum pointers.
+- **Compact machine proof exists.** `experiments/2026-08-09_160628Z_smoke_fbb99664/result.json`, `experiments/2026-08-09_160543Z_preflight_51062efd/result.json` and `experiments/2026-08-09_160628Z_smoke_fbb99664/tasks.json` preserve accepted outcomes and immutable pointers while large payloads remain ignored.
+- **Journal is append-only.** `experiments/JOURNAL.jsonl` retains the rejected diagnostic, accepted raw run event, and enriched acceptance event. The rejected run is not silently relabeled or deleted.
 
 ## 8. Required final smoke
 

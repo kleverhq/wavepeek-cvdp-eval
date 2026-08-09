@@ -1,0 +1,24 @@
+{
+  "created_at": "2026-08-09T16:06:22.111300+00:00",
+  "errors": [],
+  "evidence": {
+    "51062efdf51c7798bff30606ce1cd7fd__ABcv7GK/agent/pi/sessions/main.jsonl": "512b9a696d2c012f1cc5bc88c109579c957824e9b03708c501a2db118681a563",
+    "51062efdf51c7798bff30606ce1cd7fd__ABcv7GK/agent/pi/tmp/pi-subagents-1000/app/019fe745-fe68-71d4-8667-8376a5023aa6/tasks/0242d8a8-0f98-404.output": "0a55570682917d1b6746da9a6fb89f629386f0090696af97052e9e6b47636680",
+    "51062efdf51c7798bff30606ce1cd7fd__ABcv7GK/agent/trajectory-index.json": "e138404fbb690b66fb2919b6a5f7e8d25b717b46d3152bb95ff5cbb0ea122cab",
+    "51062efdf51c7798bff30606ce1cd7fd__ABcv7GK/result.json": "6d01460231457156f26155a3b1cce7104f5bd9b6b48675f12102cfd794d0432a",
+    "51062efdf51c7798bff30606ce1cd7fd__xsLtfQG/agent/pi/sessions/main.jsonl": "788ed2b3a9eb56761d27a82f042ad841f1b3a9e2baf6c6d51312fe7ab8023ce0",
+    "51062efdf51c7798bff30606ce1cd7fd__xsLtfQG/agent/pi/tmp/pi-subagents-1000/app/019fe746-0127-7a2e-9bf8-ab7be0df812f/tasks/a30e97aa-bfbc-4be.output": "25313c62cb3c816d4d20be75658a37ee0b16aa541f2d53c8e0ceab3a864dea46",
+    "51062efdf51c7798bff30606ce1cd7fd__xsLtfQG/agent/trajectory-index.json": "596839716f899368ee156a4af124dba889faea56adb7cd7ab1ccbaeaa184886a",
+    "51062efdf51c7798bff30606ce1cd7fd__xsLtfQG/result.json": "3f9ba45e631a90421ea3c24cf5430ca932f3697c143d637391247ec9f4617b12",
+    "lock.json": "e34da12a51d4dd3882b3e861d0c047ab8274e3f6138ef8d3b6ba54a20c0632dd",
+    "result.json": "2fbd68ff34846ff6410411ddbe729240fd7b59fd2d513b62b803b8b40051b84c"
+  },
+  "identity": "51062efdf51c7798bff30606ce1cd7fdf7f2aa4d5b92d33c3e1ad9189e7c27b1",
+  "job_dir": "/home/esynr3z/projects/wavepeek-eval/preflights/20260809T160543Z-51062efd/harbor/live-model-preflight-20260809T160543Z-51062efd",
+  "models": [
+    "openai-codex/gpt-5.6-luna",
+    "openrouter/deepseek/deepseek-v4-flash-0731"
+  ],
+  "schema_version": 1,
+  "status": "passed"
+}

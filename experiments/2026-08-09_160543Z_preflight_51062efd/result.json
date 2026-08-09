@@ -109,7 +109,8 @@
     "result.json": "2fbd68ff34846ff6410411ddbe729240fd7b59fd2d513b62b803b8b40051b84c"
   },
   "identity": "51062efdf51c7798bff30606ce1cd7fdf7f2aa4d5b92d33c3e1ad9189e7c27b1",
-  "job_dir": "preflights/20260809T160543Z-51062efd/harbor/live-model-preflight-20260809T160543Z-51062efd",
+  "experiment": "experiments/2026-08-09_160543Z_preflight_51062efd",
+  "job_dir": "experiments/2026-08-09_160543Z_preflight_51062efd/artifacts/harbor/live-model-preflight-20260809T160543Z-51062efd",
   "models": [
     "openai-codex/gpt-5.6-luna",
     "openrouter/deepseek/deepseek-v4-flash-0731"

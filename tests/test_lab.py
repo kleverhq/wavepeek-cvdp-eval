@@ -40,6 +40,42 @@ class FrozenSelectionTests(unittest.TestCase):
         self.assertEqual(matrix["agent_timeout_seconds"], 123)
         self.assertEqual(matrix["verifier_timeout_seconds"], 45)
 
+    def test_experiment_ids_are_readable_and_safe(self):
+        experiment_id = lab.new_experiment_id("Smoke / Luna + DeepSeek")
+        self.assertRegex(
+            experiment_id,
+            r"^\d{4}-\d{2}-\d{2}_\d{6}Z_smoke-luna-deepseek_[a-f0-9]{8}$",
+        )
+
+    def test_experiment_lookup_accepts_directory_or_historical_run_id(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            artifacts = root / "2026-08-09_160628Z_smoke_fbb99664" / "artifacts"
+            artifacts.mkdir(parents=True)
+            (artifacts / "manifest.json").write_text('{"run_id":"20260809T160628Z-fbb99664"}\n')
+            with patch.object(lab, "EXPERIMENTS", root):
+                self.assertEqual(lab.resolve_run_path(artifacts.parent.name), artifacts)
+                self.assertEqual(lab.resolve_run_path("20260809T160628Z-fbb99664"), artifacts)
+                self.assertEqual(lab.resolve_run_path("latest"), artifacts)
+
+    def test_archived_preflight_marker_is_reusable_without_cache(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            experiment = root / "2026-08-09_160543Z_preflight_51062efd"
+            job = experiment / "artifacts" / "harbor" / "job"
+            job.mkdir(parents=True)
+            evidence = job / "result.json"
+            evidence.write_text("{}\n")
+            marker = experiment / "preflight.json"
+            marker.write_text(json.dumps({
+                "identity": "identity",
+                "status": "passed",
+                "job_dir": "/old/preflights/job",
+                "evidence": {"result.json": lab.sha256(evidence)},
+            }))
+            with patch.object(lab, "EXPERIMENTS", root):
+                self.assertEqual(lab.archived_preflight_marker("identity"), marker)
+
     def test_multiple_treatment_revisions_expand_without_duplicating_baseline(self):
         args = argparse.Namespace(
             selector=None,

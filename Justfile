@@ -45,18 +45,18 @@ live-preflight:
 smoke: live-preflight
     python3 scripts/lab.py run --selector smoke --name smoke
 
-# Create a new lineage-linked continuation without modifying parent evidence.
+# Create a lineage-linked experiment without modifying parent evidence.
 resume run="latest":
     python3 scripts/lab.py resume "{{run}}"
 
-# Verify every retained run file and bound live-preflight checksum.
+# Verify an experiment's immutable artifacts and bound live-preflight checksum.
 verify run="latest":
     python3 scripts/lab.py verify "{{run}}"
 
-# Show normalized status for a run ID or latest.
+# Show status for an experiment directory, historical run ID, or latest.
 status run="latest":
     python3 scripts/lab.py status "{{run}}"
 
-# Print the retained analysis for a run ID or latest.
+# Print analysis for an experiment directory, historical run ID, or latest.
 analyze run="latest":
     python3 scripts/lab.py analyze "{{run}}"
