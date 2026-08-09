@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "models": [
+    "openai-codex-gpt-5.6-luna-xhigh",
+    "openrouter-deepseek-v4-flash-0731-xhigh"
+  ],
+  "arms": [
+    "baseline",
+    "wavepeek"
+  ],
+  "harbor_commit": "0348989adffbb43bf0b410fd36197333239633f1",
+  "agent_timeout_seconds": 3600,
+  "evaluator_timeout_seconds": 600,
+  "default_attempts": 1,
+  "default_concurrency": 4,
+  "harbor_max_retries": 0,
+  "subagents": {
+    "fallbackSubagent": "none",
+    "disableDefaultAgents": true,
+    "scopeModels": true,
+    "schedulingEnabled": false,
+    "maxSubagentDepth": 1,
+    "outputTranscript": true
+  },
+  "smoke": {
+    "task_id": "cvdp_agentic_axis_broadcaster_0001",
+    "selection_rule": "minimum recorded successful probe duration among selected traditional tasks, then lexical task ID",
+    "recorded_probe_duration_seconds": 0.703
+  }
+}

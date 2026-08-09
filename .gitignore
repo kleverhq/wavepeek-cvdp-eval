@@ -1,0 +1,7 @@
+.cache/
+artifacts/
+jobs/
+runs/raw/
+__pycache__/
+*.pyc
+agent/.build/

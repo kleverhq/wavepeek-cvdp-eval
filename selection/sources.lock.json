@@ -1,0 +1,69 @@
+{
+  "dataset": {
+    "commit": "5b807d945f6a99aa645f7e43a64a2115e281b4bf",
+    "files": {
+      "cvdp_v1.1.0_agentic_code_generation_no_commercial.jsonl": "2007f4311ed731a985a4ed9187479ad2cfc2462bc4013eba0d72a9f35642fdcf",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_no_commercial.jsonl": "809916fa3248a4b2597b2a2ac364d3450d24936cad0e25bbe1bf0f1243ad1ea7",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/README.md": "c9a995e7073c0a264167ab729c6daceb7060c48363dfcdade04bb5ce8a6e1cde",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_2dconv-FPGA.bundle": "3334c18095e6e9bfc2055b623c504bba271ec7a8a8bbc683b760f4163a59b79d",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_802.11a.bundle": "a26ac271d966bbd1f9f1aba96e37de9787fa0053e8c98a59f250f2149c69d31b",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_I2SRV64.bundle": "4c29e846c28203a6e595b8b43bfeacba4bf458ba3daf439fc542d63e70b60d43",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_NoobsCpu-8bit.bundle": "56e05dc3fb07ccac09cefb15b16d060eb0ea760472b76c555de7ff5102fc34ef",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_RISC-V.bundle": "234664613476c3d65b268b9f60d2ab3c0fd384caa2f297c18a31ab7002b89c3a",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_SoomRV.bundle": "14c1ba68045cc151f1cd7407d24791e6dd24bcd616a6f8d1334b87d3ce85d648",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming.bundle": "91cebc6767b128e4fee6a40a48f049f328fb733533caffa7bde874bb16b2df95",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_ULX3S_FPGA_Sobel_Edge_Detection_OV7670.bundle": "4511c5174635a4a7666aaa0a0cfa5e4870d49b6d935858323b862d854b668fc9",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_async-fifo.bundle": "cdca16b076dba57a23d0bad06ddedcb6578234d3669d7068e7f33996187cc132",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_axi4_lite.bundle": "a55aa65c6bc9c1e7e45d4e474d740027dc694537e49d06819c6edac1ff253dc3",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_axis.bundle": "134898deb752820508c4788fce69553f722702239125eb74362506e8d0a9b2a1",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_caliptra-rtl.bundle": "73bb5b5449571631174fc0c3d3c051df6a9d6ffc5df1b0a8620d09e70f1c80cd",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_corundum.bundle": "1951c80caa17f499d487c075c4fe7c4d6d4b8841bb2e948d9ba08408943d4e49",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_cv32e40p_1.bundle": "f9d7c29a6b303d17e3ad16d1b478d2d4140bdf34e9ae8d745af3a5dddfabfc4f",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_cva6_riscv_core.bundle": "1c0aeb5e9edb322f65229d689939c7a64fa4cbe61d997d726430bd691bb2c6c5",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_ddr4_controller.bundle": "a2dbc9827cdffda91ad9eb5ca0dce6bdfe2c98ebc912d7ee6548de193ec8d1dd",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_deepfreeze.bundle": "d0a5d5e46a33b5fbba5024044a30323beb812332a8d11bec441deee7cfef6dd9",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_detect_human_faces.bundle": "22723d5400300f74ce03ef0a42a222758045c548dbf087c0bf2e27b68173c7ad",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_dual_core.bundle": "f282352f15a2101cdd8c01bb5e97b5d4216a5e69f3a69c7686313de153450ef5",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_edma.bundle": "9202f04bb5996a06325d5a4a034c466bfeea3968a1fa26fe01c9344516b490a4",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_enso.bundle": "2fdc7de30c4f7da59591d51ee26ff7127387f9065db4c967e352ea6285cc0bf1",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_ext_cheriot-ibex.bundle": "42dec742704825e14b68bbe9a0e461cca9ed001cb88a8d00ec2f113ce48701aa",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_fabulous_fabric.bundle": "73a5780be90441176d5eaf76f602f6f45b5480fa2dd5c5fb74162f9deb38fe55",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_fpga_nes.bundle": "3119b8c47aa22ac6eb5714a4e869d014e8f85173cc746570d4d9029cc77d0de7",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_fpu_wrappers.bundle": "683159640ff464469ae3d2342c256ced7dd8f14edb0f5335e6cc9e7736ce8693",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_friscv.bundle": "c0a690c0c93c22c47bb260421f200924f8ba59f99bfe78f4c11cf4c6f1eea6e7",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_i2c.bundle": "73dfcdabf2c484b3565daf8f2152d281fad8881152cf224cd5866a3c66c4cd61",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_learn_fpga.bundle": "e59d3a2c88b1b3fb1a3e79e5c5b94c2bd2578a83ce4c4fe279256599156d9cee",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_opene902.bundle": "48017b2b1195420cbeff34e909664f5352370cc4f8954a8e880dc41336fe46a6",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_pequeno_riscv.bundle": "c270548d2dcc88905c844fe6970d1abafd540cd3be8581668c0dde1b24990d9c",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_polyphony.bundle": "add1dc2bcb03835b6d6529421864f67f58ee035937aa9d4cd1ef6d66db81035b",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_pulpino.bundle": "c42c3bb085d6f21b72e47ff910a38915ab8fa44bf1bbf990212cf026bc29f505",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_rvx.bundle": "e07e08d6273faf276a2c4bc120b084a5289d9b1c82ff567b49d3dc63ec0e8d49",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_schoolMIPS.bundle": "6678ed1708d5b19954014f876091f5015b5d30c395976825792e41c07e9a76cb",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_usb_cdc.bundle": "984bbe04d15cc337ac77c5b8a3f3381cf443cd053a233213aa287b74b6e7a04a",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_verilog_axi.bundle": "76dbd89bbbb7cdc62c904f4ee397bd6c2e2f7a07fe28f9349628f13c8d9e04b3",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_verilog_ethernet.bundle": "640a387df05b97dbab3a3c5907118d9c6ddb9f825c02b18206f10087b4ed7695",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_verilog_pcie.bundle": "9cc2d27756b8bb20d93d76a9cba117532801956a57172cdf8ff592f335010d8f",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_vortexgpu.bundle": "5e7768165eb3224e17211e7f861d1da3905a3d8a59bc0ebb9fa022f3a60969db",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/cvdp_agentic_heavy_wifi_ldpc_codec.bundle": "cb0d984910f42633b15334a4f2c37540da8d38e84fa8c4dcbf6e7ad301f9aa5d",
+      "cvdp_v1.1.0_agentic_heavy_code_generation_public/manifest.txt": "90977fa56c94df56299d8607fcd480f3f90497d7fda58d3809d31c77093ba357",
+      "cvdp_v1.1.0_nonagentic_code_generation_no_commercial.jsonl": "cbcd81295561ebb16e4d857e096f4d9908d042c33aff3b58abf236e868411857"
+    },
+    "repository": "https://huggingface.co/datasets/nvidia/cvdp-benchmark-dataset"
+  },
+  "schema_version": 1,
+  "simulator_image": {
+    "id": "sha256:b4225673ee3ecc81b6e383ada63929b6b916f75502a85323f5b5d73b29340af2",
+    "tag": "nvidia/cvdp-sim:v1.0.0",
+    "tools": {
+      "cocotb": "2.0.1",
+      "iverilog": "13.0",
+      "pytest": "8.3.2",
+      "verilator": "5.038",
+      "yosys": "0.40"
+    }
+  },
+  "tooling": {
+    "commit": "8e894cf74414ab1eaea1e2b4e80a02f123df07b6",
+    "repository": "https://github.com/NVlabs/cvdp_benchmark.git"
+  }
+}

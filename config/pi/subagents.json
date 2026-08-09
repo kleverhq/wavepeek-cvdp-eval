@@ -1,0 +1,8 @@
+{
+  "fallbackSubagent": "none",
+  "disableDefaultAgents": true,
+  "scopeModels": true,
+  "schedulingEnabled": false,
+  "maxSubagentDepth": 1,
+  "outputTranscript": true
+}

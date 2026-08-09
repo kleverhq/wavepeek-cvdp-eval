@@ -1,0 +1,83 @@
+{
+  "cvdp": {
+    "dataset_commit": "5b807d945f6a99aa645f7e43a64a2115e281b4bf",
+    "runner_requirements_path": "config/cvdp-runner-requirements.txt",
+    "runner_requirements_sha256": "7095f5ba952d66cd68fd9d15e1375e06cb8d63a0c249add91b8c0e7464110594",
+    "selected_manifest_sha256": "945c389a3f863faadfd863d22315285fa2049cac3595eb37aa33efb3b159124d",
+    "sources_lock_sha256": "524adb134aca07d76b9ac7ef63d4f9bb0e3c3c182ca61a2acac83f561226a822",
+    "tooling_commit": "8e894cf74414ab1eaea1e2b4e80a02f123df07b6"
+  },
+  "experiment_config_sha256": "81dd45f91b213667918f0b4fb709b9e6f873b06d9834189e41b5625b87e2f777",
+  "images": {
+    "baseline": {
+      "id": "sha256:b74cc5e63d1ea042b8f0967a6634b511703f2c565fdbaf58d3d634a1b2d2c149",
+      "tag": "cvdp-pi-agent:baseline"
+    },
+    "wavepeek": {
+      "id": "sha256:9fe7d630a48465195637c3353da5cbb0809ebed8f4cbe79f685f1c729b91b908",
+      "tag": "cvdp-pi-agent:wavepeek-a27a96b557cb"
+    }
+  },
+  "model_configs": {
+    "openai-codex-gpt-5.6-luna-xhigh": "388b686a358106e02eed175ec750b491d18b19bb2b3e7415aa8d88bd4678e4e8",
+    "openrouter-deepseek-v4-flash-0731-xhigh": "f657d30bb92f2882347c6ea07678967be495d6ff6aaa08eb43fd745cc7ce4711"
+  },
+  "node": {
+    "image": "node@sha256:dd9d21971ec4395903fa6143c2b9267d048ae01ca6d3ea96f16cb30df6187d94",
+    "version": "22.22.0"
+  },
+  "pi": {
+    "commit": "845d6ff1f6643aba440341cce877ce1c43ebbc39",
+    "model_catalog_path": "config/pi/models-store.json",
+    "model_catalog_sha256": "0626b001c0258d7de8b3004cdc138cd189605d4c0b608affd3da0f316f9dde3d",
+    "npm_integrity": "sha512-uYhF+FsZxogoSX/AxBcUdiY+ZklubwaXyAoEGA2eQwsHcyEAhUYIKh/WLXe/a8+k8eTCmxb+ZN2Zo9mzQtzbWw==",
+    "package": "@earendil-works/pi-coding-agent",
+    "version": "0.83.0"
+  },
+  "pi_subagents": {
+    "commit": "2966cd5a33c0640de9698b56a39c11f83207a835",
+    "package_lock_sha256": "d45b725d00d020214bd11c7bd6273233b34dd856484593cbeb60219ed107fb87",
+    "project_isolation_patch": "agent/patch-pi-subagents.py",
+    "project_isolation_patch_sha256": "9d21a176898e266eb79804382cdda92143d266d8e92f10b8f587e18c02fe72c3",
+    "repository": "https://github.com/tintinweb/pi-subagents",
+    "source_archive_sha256": "49090d5a52820dcee60666a80c0cf4dd851c7d8a8d02dc7d5446156d438ffeab"
+  },
+  "rust": {
+    "image": "rust@sha256:d0a4aa3ca2e1088ac0c81690914a0d810f2eee188197034edf366ed010a2b382",
+    "version": "1.93.0"
+  },
+  "schema_version": 1,
+  "simulator_image": {
+    "base_rootfs_layer": "sha256:123a078714d5ea9382d4d9f550753aefce8b34ec5ae11ae8273038d3bcbb943f",
+    "dockerfile_sha256": "79049c0dff0a64d277064485bfb1706b7e3699c6181c353184452146dbf60164",
+    "id": "sha256:b4225673ee3ecc81b6e383ada63929b6b916f75502a85323f5b5d73b29340af2",
+    "image_artifact": "artifacts/images/cvdp-sim-b4225673ee3e.tar.gz",
+    "image_artifact_sha256": "9e12c68c69f2e22e37ce78260d7c3cda5f18b82311056a16423b1e6376d61bc2",
+    "requirements_sha256": "e594351e5012acfb0ae6884fd213b9ac356e570ed2830c8ac9a59f0886e34514",
+    "source_commits": {
+      "iverilog": "30a7d1a11b7586aa0fc868e509f04f514effc0ad",
+      "verilator": "3e4c8a51d1a1ca93f6252289e4ddc125a342ef02",
+      "yosys": "8009186e8ce840253537478cf36162346caac51c"
+    },
+    "tag": "nvidia/cvdp-sim:v1.0.0",
+    "versions": {
+      "cocotb": "2.0.1",
+      "iverilog": "13.0",
+      "pytest": "8.3.2",
+      "uv": "0.11.20",
+      "verilator": "5.038",
+      "yosys": "0.40"
+    }
+  },
+  "wavepeek": {
+    "binary_sha256": "12cf2b6e672bc13bd89bd2a33543c1e9539d7fc57fe05511b36f4023f0b173a8",
+    "cargo_lock_sha256": "ae1db39ff2cbca9959e3076e46616b8adcdb7e8f8e9c9ea9851335d852d93b50",
+    "commit": "a27a96b557cb7b9df970fbfef65a5c8354befbc9",
+    "docs_sha256": "2d7d42c92f081331cc0b6382ba3fa4fbcf7f62f344c15b93f92396b32a9d021f",
+    "repository": "https://github.com/kleverhq/wavepeek",
+    "skill_sha256": "b3bd702ff82715d37f33afd00fbab960ca5b271d3fd23e4455a23fa2dcfb776d",
+    "source_archive_sha256": "77913240ce705f13940662fb96e0414470d9855c1a4a15d37116e04d4c0b77d9",
+    "source_artifact": "artifacts/sources/wavepeek-a27a96b557cb7b9df970fbfef65a5c8354befbc9-77913240ce705f13940662fb96e0414470d9855c1a4a15d37116e04d4c0b77d9.tar",
+    "version_output": "wavepeek v2.2.0"
+  }
+}

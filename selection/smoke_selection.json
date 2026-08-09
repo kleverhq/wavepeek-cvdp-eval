@@ -1,0 +1,50 @@
+{
+  "candidates": [
+    {
+      "duration_seconds": 0.703,
+      "task_id": "cvdp_agentic_axis_broadcaster_0001"
+    },
+    {
+      "duration_seconds": 0.709,
+      "task_id": "cvdp_agentic_custom_fifo_0004"
+    },
+    {
+      "duration_seconds": 0.743,
+      "task_id": "cvdp_agentic_direct_map_cache_0003"
+    },
+    {
+      "duration_seconds": 0.77,
+      "task_id": "cvdp_agentic_monte_carlo_0006"
+    },
+    {
+      "duration_seconds": 0.795,
+      "task_id": "cvdp_agentic_dual_port_memory_0001"
+    },
+    {
+      "duration_seconds": 0.812,
+      "task_id": "cvdp_agentic_lfsr_0001"
+    },
+    {
+      "duration_seconds": 0.824,
+      "task_id": "cvdp_agentic_AES_encryption_decryption_0012"
+    },
+    {
+      "duration_seconds": 0.871,
+      "task_id": "cvdp_agentic_AES_encryption_decryption_0009"
+    },
+    {
+      "duration_seconds": 0.957,
+      "task_id": "cvdp_agentic_AES_encryption_decryption_0003"
+    },
+    {
+      "duration_seconds": 0.974,
+      "task_id": "cvdp_agentic_AES_encryption_decryption_0005"
+    }
+  ],
+  "rule": "minimum recorded successful probe duration among selected traditional tasks, then lexical task ID",
+  "schema_version": 1,
+  "winner": {
+    "duration_seconds": 0.703,
+    "task_id": "cvdp_agentic_axis_broadcaster_0001"
+  }
+}

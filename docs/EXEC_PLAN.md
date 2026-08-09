@@ -18,8 +18,8 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 
 - [x] (2026-08-09 14:17Z) Read `docs/GOAL.md`, mapped local CVDP, Harbor, Pi, pi-subagents, WavePeek, model, credential, and simulator inputs, and recorded their immutable revisions.
 - [x] (2026-08-09 14:17Z) Initialized Git history by committing the user-provided goal unchanged.
-- [ ] Add and verify the frozen cohort, source lock, project manifest, Just interface, bootstrap logic, and generated Harbor task materialization.
-- [ ] Add the pinned Harbor Pi adapter, strict pi-subagents configuration, treatment-only WavePeek environment, audit wrapper, usage aggregation, and unit/integration checks.
+- [x] (2026-08-09 15:13Z) Added and verified the frozen cohort, source lock, lock manifest, Just interface, CVDP/Harbor bootstrap, deterministic traditional/heavy Harbor task materialization, hidden verifier boundary, and reviewed baseline/treatment images.
+- [ ] Add the pinned Harbor Pi adapter, strict pi-subagents configuration, treatment-only WavePeek environment, audit wrapper, usage aggregation, and unit/integration checks (completed: adapter import/install-only Harbor trial, provider-only credential staging, strict runtime/image setup, transcript aggregation code; remaining: paid-session evidence and result normalization tests).
 - [ ] Add run selection, preflight gates, Harbor job generation/execution, artifact normalization, analysis, append-only journal, and operator documentation.
 - [ ] Run milestone reviews and resolve every correctness or reproducibility finding.
 - [ ] Execute and audit exactly four smoke trials for `cvdp_agentic_axis_broadcaster_0001`, both exact model profiles, both arms, one attempt, and WavePeek 2.2.0.
@@ -35,8 +35,12 @@ This work does not create another benchmark orchestrator around Harbor, modify C
   Evidence: Harbor `src/harbor/agents/installed/pi.py` parses only `/logs/agent/pi.txt` after the run.
 - Observation: pi-subagents 0.14.3 documents fallback from an unknown agent type to `general-purpose`, which conflicts with the no-fallback requirement.
   Evidence: its README states “Unknown types fall back to general-purpose with a note”; the experiment must patch this to a hard failure and test it.
-- Observation: eight selected heavy tasks depend on 40 sanitized Git bundles that are not currently present beside the local dataset.
-  Evidence: the frozen `sources.lock.json` lists their checksums; bootstrap must fetch and verify them before claiming all-task readiness.
+- Observation: eight selected heavy tasks depend on sanitized Git bundles outside the JSONL dataset.
+  Evidence: `scripts/bootstrap.py --heavy-bundles --verify` restored and hash-verified all 40 locked bundles, and deterministic materialization of `cvdp_agentic_heavy_2dconv-FPGA_0009` exposed its selected target from the sanitized `external/` tree.
+- Observation: Harbor silently discards an invalid local task while resolving a dataset, producing only “Either datasets or tasks must be provided.”
+  Evidence: the first generated package name lacked Harbor's required `org/name` form; direct `TaskConfig.model_validate_toml` exposed the validation error. Generated names now use `cvdp-eval/<task-arm>`, and a Harbor NOP trial completed the hidden verifier.
+- Observation: a first milestone security review found that a root agent could replace `/venv/bin/pytest` and that a task-level auth bind exposed unrelated providers.
+  Evidence: generated tasks now switch to UID/GID 1000 after root-owned verifier setup, and `harbor_adapter.py` uploads a temporary JSON file containing only the selected provider record, deletes the host temporary immediately, and removes the container copy after Pi exits.
 
 ## Decision Log
 
@@ -55,13 +59,13 @@ This work does not create another benchmark orchestrator around Harbor, modify C
 - Decision: configure only a project `general-purpose` subagent that inherits the exact parent model and `xhigh` thinking, disable nested extensions for the child, disable default Explore/Plan types, and patch unknown types to hard-fail.
   Rationale: this is the smallest configuration that permits required Pi delegation while preventing silent model/type fallback and uncontrolled nested delegation.
   Date/Author: 2026-08-09 / coding agent
-- Decision: inject host Pi authentication as a read-only Docker secret-like bind outside `/app` and all log/artifact paths, then copy it with restrictive permissions into the ephemeral agent home.
-  Rationale: both model providers use Pi-managed authentication; a read-only non-artifact mount lets the existing Pi provider code authenticate without recording secret contents.
+- Decision: have the custom Harbor agent read external host auth, write a mode-0600 temporary file containing only the selected provider record, upload it to `/run/secrets/pi-auth.json`, and remove both copies at the earliest safe points.
+  Rationale: a task-level bind of the full Pi auth file would expose unrelated provider credentials to agent shell commands. Harbor's native `upload_file` API supports per-trial provider isolation without serializing secret values into job configuration or artifacts.
   Date/Author: 2026-08-09 / coding agent
 
 ## Outcomes & Retrospective
 
-The repository currently contains only the frozen goal and this implementation plan. Research has removed the major architecture unknowns, but no runnable experiment artifacts exist yet. This section will be updated after each reviewed milestone and at final completion.
+Milestone 1 is implemented and reviewed. A clean workflow can verify the 18-row cohort and all lock hashes, restore CVDP inputs and heavy bundles, build provenance-linked baseline/treatment images, materialize traditional or heavy Harbor tasks, and complete a non-billing Harbor NOP verifier trial. The first review's six findings—source URL normalization, lock coverage, cached-row authentication, system-message preservation, root verifier tampering, and overbroad credential mounting—were fixed and re-reviewed; no milestone-1 finding remains. Paid Pi execution, normalization, analysis, revision multiplexing, and the four-cell smoke remain.
 
 ## Context and Orientation
 
@@ -81,11 +85,9 @@ Harbor writes raw job and trial material beneath a dated run directory. Postproc
 
 ## Open Questions
 
-The exact public download URLs for the 40 sanitized heavy bundles and the pinned CVDP simulator image must be verified from `selection/sources.lock.json` and upstream CVDP bootstrap code. If the simulator tag no longer resolves to the locked image ID, bootstrap must fail rather than silently substitute it.
+The run interface still needs to turn additional remote commits, local committed revisions, and branches into content-addressed treatment images without rewriting the default 2.2.0 lock. The fixed smoke revision is fully proven: `wavepeek docs export` emits 24 embedded topics from the same built binary, and binary, skill, docs, source archive, commit, and image identities are locked.
 
-The treatment build must establish the smallest supported command for extracting WavePeek's bundled documentation from the same binary. If `wavepeek docs` is interactive or emits only an index, the materializer will preserve the checked-out docs directory only after proving its Git commit matches the binary source commit; it will still record separate hashes.
-
-The exact Harbor config schema needed to mount the host Pi auth file read-only and import the local adapter must be proven with an install-only trial before any paid smoke model call.
+A paid single-cell Pi execution is still required to prove live RPC event shape, OAuth/API-key behavior, subagent transcript/session placement, model/thinking checks, and post-run usage aggregation. The Harbor custom adapter import and install-only execution already pass without a model call.
 
 ## Plan of Work
 
@@ -214,3 +216,5 @@ Exact model profiles:
 External runtime dependencies are Docker, Git, Just, Python 3.11+, uv/uvx, network access for first bootstrap, two configured Pi providers, and enough disk for CVDP and image caches. Harbor, Pi, pi-subagents, Rust builder, CVDP inputs, and WavePeek are all pinned by version plus immutable checksum/commit in `experiment.toml` and source lock files.
 
 Plan revision note (2026-08-09): created the initial self-contained plan after repository and dependency research; recorded unresolved heavy-bundle and Harbor-mount details as explicit proof obligations rather than assumptions.
+
+Plan revision note (2026-08-09 15:13Z): recorded completed and independently reviewed Milestone 1, the native Harbor credential-upload design that replaced an unsafe full-auth bind, resolved bundle/docs/adapter questions, and the remaining paid-session and multi-revision proof obligations.
