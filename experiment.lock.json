@@ -10,11 +10,11 @@
   "experiment_config_sha256": "81dd45f91b213667918f0b4fb709b9e6f873b06d9834189e41b5625b87e2f777",
   "images": {
     "baseline": {
-      "id": "sha256:b74cc5e63d1ea042b8f0967a6634b511703f2c565fdbaf58d3d634a1b2d2c149",
+      "id": "sha256:8578d69839bd67569c9f2cd3e9bf724dafe09c37a0f0186c630c64ab1c475499",
       "tag": "cvdp-pi-agent:baseline"
     },
     "wavepeek": {
-      "id": "sha256:9fe7d630a48465195637c3353da5cbb0809ebed8f4cbe79f685f1c729b91b908",
+      "id": "sha256:4fd3024ce4e222d3d7084727fe61f2ca27b3cf636e746adb7f3663a4a5fd9691",
       "tag": "cvdp-pi-agent:wavepeek-a27a96b557cb"
     }
   },
@@ -38,8 +38,10 @@
     "commit": "2966cd5a33c0640de9698b56a39c11f83207a835",
     "package_lock_sha256": "d45b725d00d020214bd11c7bd6273233b34dd856484593cbeb60219ed107fb87",
     "project_isolation_patch": "agent/patch-pi-subagents.py",
-    "project_isolation_patch_sha256": "9d21a176898e266eb79804382cdda92143d266d8e92f10b8f587e18c02fe72c3",
+    "project_isolation_patch_sha256": "74017806b61d78b1ba59f85ccd0aa0d1ee87f1a2182c412a9f63ec206977532f",
     "repository": "https://github.com/tintinweb/pi-subagents",
+    "settings_path": "config/pi/subagents.json",
+    "settings_sha256": "3e61ec98d1f1c2ef2df189f4c2d052034324b1a1be8396417b7e165e3a54ab2c",
     "source_archive_sha256": "49090d5a52820dcee60666a80c0cf4dd851c7d8a8d02dc7d5446156d438ffeab"
   },
   "rust": {

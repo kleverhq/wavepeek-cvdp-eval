@@ -145,6 +145,7 @@ def docker_context() -> bytes:
         BUILD_DIR / "pi-subagents-source.tar",
         ROOT / "config" / "experiment.json",
         ROOT / "config" / "pi" / "models-store.json",
+        ROOT / "config" / "pi" / "subagents.json",
         *sorted((ROOT / "config" / "models").glob("*.json")),
     ]
     executable = {"agent/patch-pi-subagents.py", "agent/wavepeek-wrapper.py"}
@@ -163,7 +164,13 @@ def docker_context() -> bytes:
         return stream.read()
 
 
-def build(source: str, commit: str, update_lock: bool) -> dict:
+def build(
+    source: str,
+    commit: str,
+    update_lock: bool,
+    allow_unlocked: bool = False,
+    output_manifest: Path | None = None,
+) -> dict:
     ensure_cvdp_image()
 
     wavepeek_archive = BUILD_DIR / "treatment-source.tar"
@@ -265,6 +272,8 @@ def build(source: str, commit: str, update_lock: bool) -> dict:
             "package_lock_sha256": member_hash(subagents_archive, "package-lock.json"),
             "project_isolation_patch": "agent/patch-pi-subagents.py",
             "project_isolation_patch_sha256": sha256(ROOT / "agent" / "patch-pi-subagents.py"),
+            "settings_path": "config/pi/subagents.json",
+            "settings_sha256": sha256(ROOT / "config" / "pi" / "subagents.json"),
         },
         "wavepeek": {
             "repository": wavepeek_url,
@@ -288,7 +297,11 @@ def build(source: str, commit: str, update_lock: bool) -> dict:
         },
     }
     rendered = json.dumps(lock, indent=2, sort_keys=True) + "\n"
-    if LOCK_PATH.exists() and not update_lock:
+    if allow_unlocked:
+        output_manifest = output_manifest or ROOT / ".cache" / "wavepeek" / commit / "manifest.json"
+        output_manifest.parent.mkdir(parents=True, exist_ok=True)
+        output_manifest.write_text(rendered)
+    elif LOCK_PATH.exists() and not update_lock:
         if LOCK_PATH.read_text() != rendered:
             raise RuntimeError("build output differs from experiment.lock.json; inspect it and rerun with --update-lock for an intentional new experiment identity")
     elif not update_lock:
@@ -302,11 +315,21 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--wavepeek-repo", default=WAVEPEEK_REPOSITORY)
     parser.add_argument("--wavepeek-sha", default=WAVEPEEK_SHA)
-    parser.add_argument("--update-lock", action="store_true", help="accept and write a new experiment identity")
+    parser.add_argument("--update-lock", action="store_true", help="accept and write a new default experiment identity")
+    parser.add_argument("--allow-unlocked", action="store_true", help="build a candidate without changing experiment.lock.json")
+    parser.add_argument("--output-manifest", type=Path)
     args = parser.parse_args()
+    if args.update_lock and args.allow_unlocked:
+        raise ValueError("--update-lock and --allow-unlocked are mutually exclusive")
     if len(args.wavepeek_sha) != 40 or any(character not in "0123456789abcdef" for character in args.wavepeek_sha):
         raise ValueError("--wavepeek-sha must be a full lowercase Git SHA")
-    lock = build(args.wavepeek_repo, args.wavepeek_sha, args.update_lock)
+    lock = build(
+        args.wavepeek_repo,
+        args.wavepeek_sha,
+        args.update_lock,
+        args.allow_unlocked,
+        args.output_manifest,
+    )
     print(f"baseline={lock['images']['baseline']['id']}")
     print(f"wavepeek={lock['images']['wavepeek']['id']}")
     print(f"wavepeek_commit={lock['wavepeek']['commit']}")

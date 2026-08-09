@@ -1,6 +1,7 @@
 ---
 description: General-purpose coding agent
 tools: all
+thinking: __INHERIT_PARENT_THINKING__
 skills: true
 extensions: false
 persist_session: true

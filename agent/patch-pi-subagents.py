@@ -21,7 +21,7 @@ REPLACEMENTS = {
     ),
     "agent-runner.ts#thinking": (
         'const thinkingLevel = options.thinkingLevel ?? agentConfig?.thinking;',
-        'const thinkingLevel = undefined;',
+        'const thinkingLevel = agentConfig?.thinking;',
     ),
 }
 

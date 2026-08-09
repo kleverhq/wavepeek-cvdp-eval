@@ -1,9 +1,10 @@
+import argparse
 import hashlib
 import json
-import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts import lab
 
@@ -17,6 +18,28 @@ class FrozenSelectionTests(unittest.TestCase):
 
     def test_exact_model_profiles(self):
         lab.check()
+
+    def test_smoke_is_exactly_four_trials(self):
+        args = argparse.Namespace(selector="smoke")
+        self.assertEqual(lab.resolve_matrix(args)["trial_count"], 4)
+
+    def test_multiple_treatment_revisions_expand_without_duplicating_baseline(self):
+        args = argparse.Namespace(
+            selector=None,
+            tasks="cvdp_agentic_axis_broadcaster_0001",
+            models="all",
+            arms="all",
+            attempts="1",
+            revisions="one,two",
+        )
+        locks = [
+            {"wavepeek": {"commit": "1" * 40}},
+            {"wavepeek": {"commit": "2" * 40}},
+        ]
+        with patch.object(lab, "resolve_wavepeek_revision", side_effect=locks):
+            matrix = lab.resolve_matrix(args)
+        self.assertEqual(matrix["arm_variants"], 3)
+        self.assertEqual(matrix["trial_count"], 6)
 
 
 class MaterializationTests(unittest.TestCase):

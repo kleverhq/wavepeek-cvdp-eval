@@ -98,6 +98,7 @@ def check() -> None:
         CONFIG: experiment_lock["experiment_config_sha256"],
         ROOT / experiment_lock["pi"]["model_catalog_path"]: experiment_lock["pi"]["model_catalog_sha256"],
         ROOT / experiment_lock["pi_subagents"]["project_isolation_patch"]: experiment_lock["pi_subagents"]["project_isolation_patch_sha256"],
+        ROOT / experiment_lock["pi_subagents"]["settings_path"]: experiment_lock["pi_subagents"]["settings_sha256"],
     }
     for profile_id, expected in experiment_lock["model_configs"].items():
         pinned_files[ROOT / "config" / "models" / f"{profile_id}.json"] = expected
@@ -291,15 +292,21 @@ WORKDIR /app
 '''
 
 
-def materialize(task_id: str, arm: str, output_root: Path | None = None) -> Path:
+def materialize(
+    task_id: str,
+    arm: str,
+    output_root: Path | None = None,
+    treatment_lock: dict | None = None,
+) -> Path:
     if arm not in {"baseline", "wavepeek"}:
         raise ValueError("arm must be baseline or wavepeek")
     selection = next((row for row in selected_rows() if row["id"] == task_id), None)
     if selection is None:
         raise ValueError(f"task is not in the frozen selection: {task_id}")
     row = full_row(selection)
-    lock = json.loads(EXPERIMENT_LOCK.read_text())
-    image = lock["images"][arm]["tag"]
+    default_lock = json.loads(EXPERIMENT_LOCK.read_text())
+    lock = treatment_lock or default_lock
+    image = (default_lock if arm == "baseline" else lock)["images"][arm]["tag"]
     short = lock["wavepeek"]["commit"][:12]
     arm_id = "baseline" if arm == "baseline" else f"wavepeek-{short}"
     root = output_root or CACHE / "harbor" / "tasks" / short
@@ -374,6 +381,54 @@ def harbor_bootstrap() -> None:
     print(f"Harbor: {HARBOR_COMMIT} ({version})")
 
 
+def resolve_wavepeek_revision(spec: str) -> dict:
+    default = json.loads(EXPERIMENT_LOCK.read_text())
+    if spec == "default":
+        return default
+    if "#" in spec:
+        source, revision = spec.rsplit("#", 1)
+    elif re.fullmatch(r"[0-9a-f]{40}", spec):
+        source, revision = default["wavepeek"]["repository"], spec
+    else:
+        source, revision = spec, "HEAD"
+    local = Path(source).expanduser()
+    if local.is_dir():
+        checkout = local.resolve()
+        if run(["git", "status", "--porcelain"], checkout):
+            raise ValueError(f"local WavePeek checkout is dirty: {checkout}")
+    else:
+        cache_key = hashlib.sha256(source.encode()).hexdigest()[:16]
+        checkout = CACHE / "wavepeek" / "sources" / cache_key
+        if not checkout.exists():
+            checkout.parent.mkdir(parents=True, exist_ok=True)
+            run(["git", "clone", "--quiet", source, str(checkout)])
+        run(["git", "fetch", "--quiet", "origin"], checkout)
+    try:
+        commit = run(["git", "rev-parse", f"{revision}^{{commit}}"], checkout)
+    except RuntimeError:
+        if local.is_dir():
+            raise
+        commit = run(["git", "rev-parse", f"origin/{revision}^{{commit}}"], checkout)
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise ValueError(f"could not resolve WavePeek revision {spec}")
+    if commit == default["wavepeek"]["commit"]:
+        return default
+    manifest = CACHE / "wavepeek" / commit / "manifest.json"
+    command = [
+        sys.executable,
+        str(ROOT / "scripts" / "build_images.py"),
+        "--wavepeek-repo", str(checkout),
+        "--wavepeek-sha", commit,
+        "--allow-unlocked",
+        "--output-manifest", str(manifest),
+    ]
+    run(command, ROOT)
+    resolved = json.loads(manifest.read_text())
+    if resolved["wavepeek"]["commit"] != commit:
+        raise RuntimeError("candidate WavePeek build manifest commit mismatch")
+    return resolved
+
+
 def split_selector(value: str, allowed: list[str], label: str) -> list[str]:
     if value == "all":
         return allowed
@@ -392,14 +447,21 @@ def resolve_matrix(args: argparse.Namespace) -> dict:
         model_keys = list(MODEL_IDS)
         arms = ["baseline", "wavepeek"]
         attempts = 1
+        revision_specs = ["default"]
     else:
         task_ids = split_selector(args.tasks, [row["id"] for row in rows], "task")
         model_keys = split_selector(args.models, list(MODEL_IDS), "model")
         arms = split_selector(args.arms, ["baseline", "wavepeek"], "arm")
         attempts = int(args.attempts)
+        revision_specs = [item.strip() for item in args.revisions.split(",") if item.strip()]
     if attempts < 1:
         raise ValueError("attempts must be positive")
-    count = len(task_ids) * len(model_keys) * len(arms) * attempts
+    treatment_locks = [resolve_wavepeek_revision(spec) for spec in revision_specs] if "wavepeek" in arms else []
+    commits = [lock["wavepeek"]["commit"] for lock in treatment_locks]
+    if len(commits) != len(set(commits)):
+        raise ValueError(f"WavePeek revision selectors resolve to duplicate commits: {commits}")
+    arm_variants = int("baseline" in arms) + len(treatment_locks)
+    count = len(task_ids) * len(model_keys) * arm_variants * attempts
     if smoke and count != 4:
         raise ValueError(f"smoke matrix must contain exactly four trials, resolved {count}")
     return {
@@ -407,23 +469,33 @@ def resolve_matrix(args: argparse.Namespace) -> dict:
         "models": model_keys,
         "model_ids": [MODEL_IDS[key] for key in model_keys],
         "arms": arms,
+        "arm_variants": arm_variants,
         "attempts": attempts,
         "concurrency": min(json.loads(CONFIG.read_text())["default_concurrency"], count),
         "trial_count": count,
         "reasoning": "xhigh",
-        "wavepeek_revisions": [json.loads(EXPERIMENT_LOCK.read_text())["wavepeek"]["commit"]],
+        "wavepeek_revisions": commits,
+        "wavepeek_builds": treatment_locks,
     }
 
 
 def materialize_dataset(matrix: dict) -> Path:
-    short = matrix["wavepeek_revisions"][0][:12]
-    root = CACHE / "harbor" / "datasets" / short
+    identity = hashlib.sha256(
+        json.dumps(
+            {"tasks": matrix["tasks"], "arms": matrix["arms"], "revisions": matrix["wavepeek_revisions"]},
+            sort_keys=True,
+        ).encode()
+    ).hexdigest()[:16]
+    root = CACHE / "harbor" / "datasets" / identity
     temporary = root.with_name(root.name + ".tmp")
     shutil.rmtree(temporary, ignore_errors=True)
     temporary.mkdir(parents=True)
     for task_id in matrix["tasks"]:
-        for arm in matrix["arms"]:
-            materialize(task_id, arm, temporary)
+        if "baseline" in matrix["arms"]:
+            materialize(task_id, "baseline", temporary)
+        if "wavepeek" in matrix["arms"]:
+            for treatment_lock in matrix["wavepeek_builds"]:
+                materialize(task_id, "wavepeek", temporary, treatment_lock)
     root.parent.mkdir(parents=True, exist_ok=True)
     shutil.rmtree(root, ignore_errors=True)
     temporary.replace(root)
@@ -449,6 +521,7 @@ def resolved_job(matrix: dict, name: str) -> tuple[dict, list[str]]:
             "--agent-kwarg", "thinking=xhigh",
             "--n-attempts", str(matrix["attempts"]),
             "--n-concurrent", str(matrix["concurrency"]),
+            "--max-retries", "0",
             "--jobs-dir", str(harbor_dir),
             "--job-name", f"{name}-{run_id}",
         ]
@@ -462,6 +535,7 @@ def resolved_job(matrix: dict, name: str) -> tuple[dict, list[str]]:
         "task_dataset": str(dataset.relative_to(ROOT)),
         "harbor_commit": HARBOR_COMMIT,
         "harbor_job_dir": str(harbor_dir.relative_to(ROOT)),
+        "harbor_job_name": f"{name}-{run_id}",
         "agent": "harbor_adapter:ReproduciblePi",
         "pi_commit": json.loads(EXPERIMENT_LOCK.read_text())["pi"]["commit"],
         "pi_subagents_commit": json.loads(EXPERIMENT_LOCK.read_text())["pi_subagents"]["commit"],
@@ -488,15 +562,163 @@ def preflight(matrix: dict) -> None:
     check_credentials(matrix)
     harbor_bootstrap()
     lock = json.loads(EXPERIMENT_LOCK.read_text())
-    for arm in matrix["arms"]:
-        expected = lock["images"][arm]["id"]
-        actual = run(["docker", "image", "inspect", lock["images"][arm]["tag"], "--format", "{{.Id}}"])
+    image_records = []
+    if "baseline" in matrix["arms"]:
+        image_records.append(("baseline", lock["images"]["baseline"]))
+    image_records.extend(
+        (f"wavepeek@{candidate['wavepeek']['commit']}", candidate["images"]["wavepeek"])
+        for candidate in matrix["wavepeek_builds"]
+    )
+    for label, image in image_records:
+        expected = image["id"]
+        actual = run(["docker", "image", "inspect", image["tag"], "--format", "{{.Id}}"])
         if actual != expected:
-            raise RuntimeError(f"{arm} image mismatch: expected {expected}, got {actual}")
+            raise RuntimeError(f"{label} image mismatch: expected {expected}, got {actual}")
     print(
         f"preflight: trials={matrix['trial_count']} tasks={len(matrix['tasks'])} "
-        f"models={len(matrix['models'])} arms={len(matrix['arms'])} attempts={matrix['attempts']}"
+        f"models={len(matrix['models'])} arm_variants={matrix['arm_variants']} attempts={matrix['attempts']}"
     )
+
+
+def preflight_identity() -> str:
+    lock = json.loads(EXPERIMENT_LOCK.read_text())
+    value = {
+        "harbor": HARBOR_COMMIT,
+        "images": lock["images"],
+        "pi": lock["pi"],
+        "pi_subagents": lock["pi_subagents"],
+        "models": MODEL_IDS,
+        "reasoning": "xhigh",
+    }
+    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+
+
+def materialize_live_preflight(identity: str) -> Path:
+    root = CACHE / "harbor" / "live-preflight" / identity
+    if root.is_dir():
+        return root
+    temporary = root.with_name(root.name + ".tmp")
+    shutil.rmtree(temporary, ignore_errors=True)
+    (temporary / "environment" / "workspace").mkdir(parents=True)
+    (temporary / "tests").mkdir(parents=True)
+    lock = json.loads(EXPERIMENT_LOCK.read_text())
+    (temporary / "instruction.md").write_text(
+        "Call the Agent tool exactly once using subagent_type general-purpose. "
+        "Ask that subagent to reply only READY. After it returns, reply only READY. "
+        "Do not edit any files."
+    )
+    (temporary / "task.toml").write_text(task_toml("live-model-preflight", "live-model-preflight", "baseline"))
+    (temporary / "environment" / "Dockerfile").write_text(environment_dockerfile(lock["images"]["baseline"]["tag"]))
+    shutil.copyfile(ROOT / "harbor" / "pi_runner.py", temporary / "environment" / "harbor-pi-runner.py")
+    test = temporary / "tests" / "test.sh"
+    test.write_text("#!/bin/sh\nset -eu\nprintf '1\\n' > /logs/verifier/reward.txt\n")
+    test.chmod(0o755)
+    root.parent.mkdir(parents=True, exist_ok=True)
+    temporary.replace(root)
+    return root
+
+
+def live_preflight(force: bool = False) -> None:
+    matrix = {
+        "tasks": ["live-model-preflight"],
+        "models": list(MODEL_IDS),
+        "model_ids": list(MODEL_IDS.values()),
+        "arms": ["baseline"],
+        "arm_variants": 1,
+        "attempts": 1,
+        "concurrency": 2,
+        "trial_count": 2,
+        "reasoning": "xhigh",
+        "wavepeek_revisions": [],
+        "wavepeek_builds": [],
+    }
+    preflight(matrix)
+    identity = preflight_identity()
+    marker = CACHE / "live-preflight.json"
+    if not force and marker.is_file():
+        previous = json.loads(marker.read_text())
+        previous_job = Path(previous.get("job_dir", ""))
+        evidence_valid = bool(previous.get("evidence")) and all(
+            (previous_job / relative).is_file() and sha256(previous_job / relative) == expected
+            for relative, expected in previous.get("evidence", {}).items()
+        )
+        if previous.get("identity") == identity and previous.get("status") == "passed" and evidence_valid:
+            print(f"live preflight: reused {previous_job}")
+            return
+    task = materialize_live_preflight(identity)
+    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + identity[:8]
+    root = ROOT / "preflights" / run_id
+    job_name = f"live-model-preflight-{run_id}"
+    command = [
+        "uv", "run", "--no-dev", "--project", str(HARBOR_SOURCE), "harbor", "run",
+        "--path", str(task),
+        "--agent", "harbor_adapter:ReproduciblePi",
+    ]
+    for model in MODEL_IDS.values():
+        command.extend(["--model", model])
+    command.extend(
+        [
+            "--agent-kwarg", "version=0.83.0",
+            "--agent-kwarg", "thinking=xhigh",
+            "--n-attempts", "1",
+            "--n-concurrent", "2",
+            "--max-retries", "0",
+            "--jobs-dir", str(root / "harbor"),
+            "--job-name", job_name,
+        ]
+    )
+    root.mkdir(parents=True)
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(ROOT) + (os.pathsep + environment["PYTHONPATH"] if environment.get("PYTHONPATH") else "")
+    result = subprocess.run(command, cwd=ROOT, env=environment)
+    job_dir = root / "harbor" / job_name
+    errors = []
+    trial_dirs = sorted(path for path in job_dir.iterdir() if path.is_dir() and (path / "result.json").is_file()) if job_dir.is_dir() else []
+    if result.returncode or len(trial_dirs) != 2:
+        errors.append(f"Harbor status={result.returncode}, trials={len(trial_dirs)}")
+    observed_models = set()
+    for trial_dir in trial_dirs:
+        trial_result = json.loads((trial_dir / "result.json").read_text())
+        metadata = (trial_result.get("agent_result") or {}).get("metadata") or {}
+        model = (trial_result.get("config", {}).get("agent", {}) or {}).get("model_name")
+        observed_models.add(model)
+        if trial_result.get("exception_info"):
+            errors.append(f"{trial_dir.name}: {trial_result['exception_info']['exception_type']}")
+        if metadata.get("reasoning") != "xhigh" or metadata.get("requested_subagent_types") != ["general-purpose"]:
+            errors.append(f"{trial_dir.name}: parent/subagent identity proof failed")
+        if not metadata.get("subagent_transcripts") or not metadata.get("subagent_sessions"):
+            errors.append(f"{trial_dir.name}: subagent trajectory/session missing")
+    if observed_models != set(MODEL_IDS.values()):
+        errors.append(f"model set mismatch: {sorted(observed_models)}")
+    evidence_paths = [job_dir / "lock.json", job_dir / "result.json"]
+    for trial_dir in trial_dirs:
+        evidence_paths.extend(
+            [
+                trial_dir / "result.json",
+                trial_dir / "agent" / "trajectory-index.json",
+                trial_dir / "agent" / "pi" / "sessions" / "main.jsonl",
+            ]
+        )
+        evidence_paths.extend(sorted((trial_dir / "agent" / "pi" / "tmp").rglob("*.output")))
+    evidence = {
+        str(path.relative_to(job_dir)): sha256(path)
+        for path in evidence_paths if path.is_file()
+    }
+    record = {
+        "schema_version": 1,
+        "identity": identity,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "status": "failed" if errors else "passed",
+        "errors": errors,
+        "job_dir": str(job_dir),
+        "models": sorted(observed_models),
+        "evidence": evidence,
+    }
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
+    if errors:
+        raise RuntimeError(f"live model/subagent preflight failed: {errors}")
+    print(f"live preflight: passed {job_dir}")
 
 
 def append_journal(record: dict) -> None:
@@ -509,9 +731,249 @@ def append_journal(record: dict) -> None:
         fcntl.flock(stream, fcntl.LOCK_UN)
 
 
+def parse_jsonl_optional(path: Path) -> list[dict]:
+    return read_jsonl(path) if path.is_file() else []
+
+
+def elapsed_seconds(result: dict) -> float | None:
+    started = result.get("started_at")
+    finished = result.get("finished_at")
+    if not started or not finished:
+        return None
+    return (datetime.fromisoformat(finished.replace("Z", "+00:00")) - datetime.fromisoformat(started.replace("Z", "+00:00"))).total_seconds()
+
+
+def analyze_summary(trials: list[dict]) -> dict:
+    cells = []
+    for trial in sorted(trials, key=lambda item: (item["model"], item["arm"], item["attempt"])):
+        usage_data = trial.get("usage") or {}
+        cells.append(
+            {
+                "task_id": trial["task_id"],
+                "model": trial["model"],
+                "arm": trial["arm"],
+                "attempt": trial["attempt"],
+                "infrastructure_status": trial["infrastructure_status"],
+                "benchmark_pass": trial["benchmark_pass"],
+                "runtime_seconds": trial["runtime_seconds"],
+                "input_tokens": usage_data.get("input"),
+                "output_tokens": usage_data.get("output"),
+                "cache_read_tokens": usage_data.get("cacheRead"),
+                "cache_write_tokens": usage_data.get("cacheWrite"),
+                "reported_cost": usage_data.get("reportedCost"),
+                "pi_calculated_cost": usage_data.get("piCalculatedCost"),
+                "wavepeek_calls": trial["wavepeek"]["total_calls"],
+                "wavepeek_compliant": trial["wavepeek"]["compliant"],
+            }
+        )
+    pairs = []
+    grouped: dict[tuple[str, str, int], list[dict]] = {}
+    for trial in trials:
+        grouped.setdefault((trial["task_id"], trial["model"], trial["attempt"]), []).append(trial)
+    for (task_id, model, attempt), group in sorted(grouped.items()):
+        baseline = next((trial for trial in group if trial["arm"] == "baseline"), None)
+        for treatment in sorted(
+            (trial for trial in group if trial["arm"].startswith("wavepeek@")),
+            key=lambda trial: trial["arm"],
+        ):
+            if baseline is None:
+                continue
+            pairs.append(
+                {
+                    "task_id": task_id,
+                    "model": model,
+                    "attempt": attempt,
+                    "wavepeek_arm": treatment["arm"],
+                    "baseline_pass": baseline["benchmark_pass"],
+                    "wavepeek_pass": treatment["benchmark_pass"],
+                    "pass_delta": int(bool(treatment["benchmark_pass"])) - int(bool(baseline["benchmark_pass"])),
+                    "runtime_delta_seconds": (
+                        treatment["runtime_seconds"] - baseline["runtime_seconds"]
+                        if treatment["runtime_seconds"] is not None and baseline["runtime_seconds"] is not None
+                        else None
+                    ),
+                    "wavepeek_calls": treatment["wavepeek"]["total_calls"],
+                }
+            )
+    return {
+        "schema_version": 1,
+        "scope_note": "Infrastructure smoke only; four trials are not statistical evidence of a causal effect.",
+        "cells": cells,
+        "pairs": pairs,
+    }
+
+
+def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
+    job_dir = run_dir / "harbor" / manifest["harbor_job_name"]
+    errors: list[str] = []
+    if not job_dir.is_dir():
+        return {"schema_version": 1, "trials": []}, [f"missing Harbor job directory: {job_dir}"]
+    trial_dirs = sorted(
+        path for path in job_dir.iterdir()
+        if path.is_dir() and (path / "result.json").is_file()
+    )
+    if len(trial_dirs) != manifest["matrix"]["trial_count"]:
+        errors.append(f"expected {manifest['matrix']['trial_count']} trials, found {len(trial_dirs)}")
+    attempt_counts: dict[tuple[str, str, str], int] = {}
+    trials = []
+    meaningful = {"hierarchy", "signals", "get", "find", "eval"}
+    for trial_dir in trial_dirs:
+        result = json.loads((trial_dir / "result.json").read_text())
+        task_name = result["task_name"].split("/", 1)[-1]
+        task_id, variant = task_name.split("--", 1)
+        if variant == "baseline":
+            arm = "baseline"
+        else:
+            prefix = variant.removeprefix("wavepeek-")
+            matches = [commit for commit in manifest["matrix"]["wavepeek_revisions"] if commit.startswith(prefix)]
+            if len(matches) != 1:
+                errors.append(f"{trial_dir.name}: treatment variant does not resolve uniquely: {variant}")
+                arm = f"wavepeek@{prefix}"
+            else:
+                arm = f"wavepeek@{matches[0]}"
+        model = (result.get("config", {}).get("agent", {}) or {}).get("model_name")
+        key = (task_id, model, arm)
+        attempt_counts[key] = attempt_counts.get(key, 0) + 1
+        attempt = attempt_counts[key]
+        agent_metadata = (result.get("agent_result") or {}).get("metadata") or {}
+        invocations = parse_jsonl_optional(trial_dir / "artifacts" / "wavepeek-invocations.jsonl")
+        successful = [
+            record for record in invocations
+            if record.get("exit_status") == 0
+            and record.get("waveform_paths")
+            and record.get("subcommand") in meaningful
+        ]
+        required = [
+            "agent/pi.txt",
+            "agent/pi/sessions/main.jsonl",
+            "agent/trajectory-index.json",
+            "artifacts/final.patch",
+            "artifacts/agent-runtime.json",
+            "artifacts/main-session-stats.json",
+            "artifacts/waveforms.json",
+            "verifier/test-stdout.txt",
+            "verifier/reward.txt",
+            "config.json",
+            "lock.json",
+            "result.json",
+            "trial.log",
+        ]
+        missing = [relative for relative in required if not (trial_dir / relative).is_file()]
+        exception = result.get("exception_info")
+        if not exception and missing:
+            errors.append(f"{trial_dir.name}: missing required evidence: {missing}")
+        reward = ((result.get("verifier_result") or {}).get("rewards") or {}).get("reward")
+        trial = {
+            "trial_name": trial_dir.name,
+            "raw_path": str(trial_dir.relative_to(run_dir)),
+            "task_id": task_id,
+            "model": model,
+            "arm": arm,
+            "attempt": attempt,
+            "infrastructure_status": "complete" if not exception and not missing else "failed",
+            "exception": exception,
+            "benchmark_pass": reward == 1 or reward == 1.0,
+            "reward": reward,
+            "runtime_seconds": elapsed_seconds(result),
+            "usage": agent_metadata.get("usage"),
+            "main_usage": agent_metadata.get("main_usage"),
+            "subagent_usage": agent_metadata.get("subagent_usage"),
+            "provider_model_reasoning": {
+                "provider": agent_metadata.get("provider"),
+                "model": agent_metadata.get("model"),
+                "reasoning": agent_metadata.get("reasoning"),
+            },
+            "trajectories": {
+                "main": agent_metadata.get("main_trajectory"),
+                "subagents": agent_metadata.get("subagent_transcripts") or [],
+                "subagent_sessions": agent_metadata.get("subagent_sessions") or [],
+            },
+            "patch": "artifacts/final.patch",
+            "verifier_output": "verifier/test-stdout.txt",
+            "waveforms": "artifacts/waveforms.json",
+            "wavepeek": {
+                "total_calls": len(invocations),
+                "successful_meaningful_calls": len(successful),
+                "compliant": bool(successful) if arm.startswith("wavepeek@") else None,
+                "first_successful_call": successful[0]["started_at"] if successful else None,
+                "audit": "artifacts/wavepeek-invocations.jsonl" if invocations else None,
+            },
+            "missing_evidence": missing,
+        }
+        if arm.startswith("wavepeek@") and not trial["wavepeek"]["compliant"] and not exception:
+            errors.append(f"{trial_dir.name}: treatment did not successfully query a waveform with WavePeek")
+        trials.append(trial)
+    expected_cells = {
+        (task_id, model, arm, attempt)
+        for task_id in manifest["matrix"]["tasks"]
+        for model in manifest["matrix"]["model_ids"]
+        for arm in (
+            (["baseline"] if "baseline" in manifest["matrix"]["arms"] else [])
+            + [f"wavepeek@{commit}" for commit in manifest["matrix"]["wavepeek_revisions"]]
+        )
+        for attempt in range(1, manifest["matrix"]["attempts"] + 1)
+    }
+    observed_cells = {
+        (trial["task_id"], trial["model"], trial["arm"], trial["attempt"])
+        for trial in trials
+    }
+    if observed_cells != expected_cells:
+        errors.append(
+            "trial cell mismatch: "
+            f"missing={sorted(expected_cells - observed_cells)}, "
+            f"unexpected={sorted(observed_cells - expected_cells)}"
+        )
+    summary = {
+        "schema_version": 1,
+        "run_id": manifest["run_id"],
+        "expected_trials": manifest["matrix"]["trial_count"],
+        "observed_trials": len(trials),
+        "trials": trials,
+    }
+    (run_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+    (run_dir / "analysis.json").write_text(json.dumps(analyze_summary(trials), indent=2, sort_keys=True) + "\n")
+    return summary, errors
+
+
+def write_checksums(run_dir: Path) -> None:
+    output = run_dir / "run-checksums.json"
+    entries = {
+        path.relative_to(run_dir).as_posix(): sha256(path)
+        for path in sorted(run_dir.rglob("*"))
+        if path.is_file() and path != output
+    }
+    output.write_text(json.dumps({"schema_version": 1, "files": entries}, indent=2, sort_keys=True) + "\n")
+
+
 def execute_job(manifest: dict, command: list[str]) -> int:
     run_dir = ROOT / "runs" / manifest["run_id"]
     run_dir.mkdir(parents=True, exist_ok=False)
+    retained_sources = []
+    for build in manifest["matrix"]["wavepeek_builds"]:
+        source = ROOT / build["wavepeek"]["source_artifact"]
+        if source.is_file():
+            destination = run_dir / "sources" / source.name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, destination)
+            retained_sources.append(
+                {
+                    "commit": build["wavepeek"]["commit"],
+                    "path": str(destination.relative_to(run_dir)),
+                    "sha256": sha256(destination),
+                }
+            )
+        else:
+            raise RuntimeError(f"WavePeek source artifact is missing: {source}")
+    manifest["retained_wavepeek_sources"] = retained_sources
+    preflight_marker = CACHE / "live-preflight.json"
+    if preflight_marker.is_file():
+        live = json.loads(preflight_marker.read_text())
+        manifest["live_preflight"] = {
+            "identity": live.get("identity"),
+            "status": live.get("status"),
+            "job_dir": live.get("job_dir"),
+            "marker_sha256": sha256(preflight_marker),
+        }
     manifest_path = run_dir / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     environment = os.environ.copy()
@@ -520,7 +982,12 @@ def execute_job(manifest: dict, command: list[str]) -> int:
     manifest["status"] = "harbor_complete" if result.returncode == 0 else "harbor_failed"
     manifest["finished_at"] = datetime.now(timezone.utc).isoformat()
     manifest["harbor_exit_status"] = result.returncode
+    summary, audit_errors = normalize_run(run_dir, manifest)
+    manifest["audit_errors"] = audit_errors
+    if audit_errors:
+        manifest["status"] = "audit_failed"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    write_checksums(run_dir)
     append_journal(
         {
             "run_id": manifest["run_id"],
@@ -528,11 +995,83 @@ def execute_job(manifest: dict, command: list[str]) -> int:
             "finished_at": manifest["finished_at"],
             "status": manifest["status"],
             "trial_count": manifest["matrix"]["trial_count"],
+            "observed_trials": summary["observed_trials"],
             "manifest": str(manifest_path.relative_to(ROOT)),
             "manifest_sha256": sha256(manifest_path),
+            "checksums_sha256": sha256(run_dir / "run-checksums.json"),
         }
     )
-    return result.returncode
+    return result.returncode or bool(audit_errors)
+
+
+def resolve_run_path(value: str) -> Path:
+    root = ROOT / "runs"
+    if value == "latest":
+        candidates = sorted(path for path in root.iterdir() if path.is_dir()) if root.is_dir() else []
+        if not candidates:
+            raise ValueError("no run directories exist")
+        return candidates[-1]
+    path = root / value
+    if not path.is_dir():
+        raise ValueError(f"run does not exist: {value}")
+    return path
+
+
+def resume_run(value: str) -> int:
+    run_dir = resolve_run_path(value)
+    manifest_path = run_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    job_dir = run_dir / "harbor" / manifest["harbor_job_name"]
+    command = [
+        "uv", "run", "--no-dev", "--project", str(HARBOR_SOURCE),
+        "harbor", "jobs", "resume", "--job-path", str(job_dir),
+    ]
+    preflight(manifest["matrix"])
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(ROOT) + (os.pathsep + environment["PYTHONPATH"] if environment.get("PYTHONPATH") else "")
+    result = subprocess.run(command, cwd=ROOT, env=environment)
+    summary, errors = normalize_run(run_dir, manifest)
+    manifest["status"] = "audit_failed" if errors else ("harbor_complete" if result.returncode == 0 else "harbor_failed")
+    manifest["audit_errors"] = errors
+    manifest["last_resumed_at"] = datetime.now(timezone.utc).isoformat()
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    write_checksums(run_dir)
+    append_journal(
+        {
+            "event": "resume",
+            "run_id": manifest["run_id"],
+            "created_at": manifest["last_resumed_at"],
+            "status": manifest["status"],
+            "observed_trials": summary["observed_trials"],
+            "manifest": str(manifest_path.relative_to(ROOT)),
+            "manifest_sha256": sha256(manifest_path),
+            "checksums_sha256": sha256(run_dir / "run-checksums.json"),
+        }
+    )
+    return result.returncode or bool(errors)
+
+
+def show_status(value: str) -> None:
+    run_dir = resolve_run_path(value)
+    manifest = json.loads((run_dir / "manifest.json").read_text())
+    summary = json.loads((run_dir / "summary.json").read_text()) if (run_dir / "summary.json").is_file() else {"trials": []}
+    print(f"run={manifest['run_id']} status={manifest['status']} expected={manifest['matrix']['trial_count']} observed={len(summary['trials'])}")
+    for trial in summary["trials"]:
+        print(
+            f"{trial['model']} {trial['arm']} attempt={trial['attempt']} "
+            f"infrastructure={trial['infrastructure_status']} pass={trial['benchmark_pass']} "
+            f"wavepeek_calls={trial['wavepeek']['total_calls']}"
+        )
+
+
+def regenerate_analysis(value: str) -> None:
+    run_dir = resolve_run_path(value)
+    summary = json.loads((run_dir / "summary.json").read_text())
+    analysis = analyze_summary(summary["trials"])
+    path = run_dir / "analysis.json"
+    path.write_text(json.dumps(analysis, indent=2, sort_keys=True) + "\n")
+    write_checksums(run_dir)
+    print(path)
 
 
 def add_matrix_arguments(parser: argparse.ArgumentParser) -> None:
@@ -541,6 +1080,7 @@ def add_matrix_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--models", default="all")
     parser.add_argument("--arms", default="all")
     parser.add_argument("--attempts", default="1")
+    parser.add_argument("--revisions", default="default", help="comma-separated SHA, path[#ref], or URL#ref")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -551,12 +1091,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     materialize_parser.add_argument("task_id")
     materialize_parser.add_argument("arm", choices=["baseline", "wavepeek"])
     subparsers.add_parser("harbor-bootstrap")
+    live_parser = subparsers.add_parser("live-preflight")
+    live_parser.add_argument("--force", action="store_true")
     for name in ("job", "preflight", "run"):
         matrix_parser = subparsers.add_parser(name)
         add_matrix_arguments(matrix_parser)
         matrix_parser.add_argument("--name", default="experiment")
         if name == "job":
             matrix_parser.add_argument("--dry-run", action="store_true")
+    for name in ("status", "analyze", "resume"):
+        run_parser = subparsers.add_parser(name)
+        run_parser.add_argument("run", nargs="?", default="latest")
     return parser.parse_args(argv)
 
 
@@ -568,6 +1113,14 @@ def main(argv: list[str] | None = None) -> int:
         materialize(args.task_id, args.arm)
     elif args.command == "harbor-bootstrap":
         harbor_bootstrap()
+    elif args.command == "live-preflight":
+        live_preflight(args.force)
+    elif args.command == "status":
+        show_status(args.run)
+    elif args.command == "analyze":
+        regenerate_analysis(args.run)
+    elif args.command == "resume":
+        return resume_run(args.run)
     elif args.command in {"job", "preflight", "run"}:
         matrix = resolve_matrix(args)
         if args.command == "preflight":
@@ -578,7 +1131,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(json.dumps(manifest, indent=2, sort_keys=True))
                 print(
                     f"trials={matrix['trial_count']} tasks={len(matrix['tasks'])} "
-                    f"models={len(matrix['models'])} arms={len(matrix['arms'])} attempts={matrix['attempts']}"
+                    f"models={len(matrix['models'])} arm_variants={matrix['arm_variants']} attempts={matrix['attempts']}"
                 )
             else:
                 preflight(matrix)

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -51,7 +52,8 @@ def configure(provider: str, model: str, thinking: str) -> Path:
     write_json(agent_dir / "subagents.json", subagents)
     agents = agent_dir / "agents"
     agents.mkdir()
-    shutil.copyfile(SUBAGENT_SOURCE, agents / "general-purpose.md")
+    agent_definition = SUBAGENT_SOURCE.read_text().replace("__INHERIT_PARENT_THINKING__", thinking)
+    (agents / "general-purpose.md").write_text(agent_definition)
     shutil.copyfile(CONFIG_ROOT / "pi" / "models-store.json", agent_dir / "models-store.json")
 
     auth_path = agent_dir / "auth.json"
@@ -123,6 +125,26 @@ def send(process: subprocess.Popen[str], message: dict) -> None:
     assert process.stdin is not None
     process.stdin.write(json.dumps(message, separators=(",", ":")) + "\n")
     process.stdin.flush()
+
+
+def retain_waveforms(workspace: Path, destination: Path) -> list[dict]:
+    retained = []
+    for source in sorted(workspace.rglob("*")):
+        if not source.is_file() or source.is_symlink() or source.suffix.lower() not in {".vcd", ".fst", ".fsdb"}:
+            continue
+        relative = source.relative_to(workspace)
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+        retained.append(
+            {
+                "workspace_path": str(source),
+                "artifact_path": str(target.relative_to(Path('/logs/artifacts'))),
+                "size": target.stat().st_size,
+                "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+            }
+        )
+    return retained
 
 
 def main() -> int:
@@ -226,6 +248,7 @@ def main() -> int:
         raise RuntimeError("Pi resolved a different reasoning level")
     (artifacts / "final-response.txt").write_text(records["final"]["data"].get("text") or "")
     write_json(artifacts / "main-session-stats.json", records["stats"]["data"], 0o644)
+    write_json(artifacts / "waveforms.json", retain_waveforms(Path('/app'), artifacts / "waveforms"), 0o644)
     return 0
 
 

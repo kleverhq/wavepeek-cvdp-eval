@@ -34,12 +34,20 @@ preflight selector="smoke":
     python3 scripts/lab.py preflight --selector "{{selector}}"
 
 # Run a selected matrix through pinned Harbor.
-run tasks="all" models="all" arms="all" attempts="1" name="experiment":
-    python3 scripts/lab.py run --tasks "{{tasks}}" --models "{{models}}" --arms "{{arms}}" --attempts "{{attempts}}" --name "{{name}}"
+run tasks="all" models="all" arms="all" attempts="1" revisions="default" name="experiment":
+    python3 scripts/lab.py run --tasks "{{tasks}}" --models "{{models}}" --arms "{{arms}}" --attempts "{{attempts}}" --revisions "{{revisions}}" --name "{{name}}"
+
+# Prove both live provider/model/xhigh profiles and delegated-agent inheritance.
+live-preflight:
+    python3 scripts/lab.py live-preflight
 
 # Run exactly the required four-trial smoke experiment.
-smoke:
+smoke: live-preflight
     python3 scripts/lab.py run --selector smoke --name smoke
+
+# Resume an interrupted Harbor job in place without discarding completed trials.
+resume run="latest":
+    python3 scripts/lab.py resume "{{run}}"
 
 # Show normalized status for a run ID or latest.
 status run="latest":

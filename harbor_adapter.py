@@ -8,51 +8,16 @@ import os
 import shlex
 import tempfile
 from pathlib import Path
-from typing import Any, override
+from typing import override
 
 from harbor.agents.installed.pi import Pi
 from harbor.environments.base import BaseEnvironment
 from harbor.models.agent.context import AgentContext
+from scripts.trajectory import agent_types, assistant_messages, session_identity, usage
 
 PI_VERSION = "0.83.0"
 PI_SUBAGENTS_COMMIT = "2966cd5a33c0640de9698b56a39c11f83207a835"
 RUNNER = "/opt/cvdp-pi/harbor-pi-runner.py"
-
-
-def assistant_messages(path: Path) -> list[dict[str, Any]]:
-    messages: list[dict[str, Any]] = []
-    for line in path.read_text(errors="replace").splitlines():
-        try:
-            record = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if record.get("type") == "message_end":
-            message = record.get("message") or {}
-        elif record.get("type") == "assistant":
-            message = record.get("message") or {}
-        elif record.get("type") == "message" and (record.get("message") or {}).get("role") == "assistant":
-            message = record["message"]
-        else:
-            continue
-        if message.get("role") == "assistant":
-            messages.append(message)
-    return messages
-
-
-def usage(messages: list[dict[str, Any]]) -> dict[str, float | int]:
-    total: dict[str, float | int] = {
-        "input": 0,
-        "output": 0,
-        "cacheRead": 0,
-        "cacheWrite": 0,
-        "reportedCost": 0.0,
-    }
-    for message in messages:
-        item = message.get("usage") or {}
-        for key in ("input", "output", "cacheRead", "cacheWrite"):
-            total[key] += int(item.get(key, 0) or 0)
-        total["reportedCost"] += float((item.get("cost") or {}).get("total", 0.0) or 0.0)
-    return total
 
 
 class ReproduciblePi(Pi):
@@ -173,16 +138,34 @@ class ReproduciblePi(Pi):
             raise RuntimeError(f"provider/model fallback detected: {mismatches[:3]}")
         if transcripts and not child_sessions:
             raise RuntimeError("subagent transcripts exist but persistent child sessions are missing")
+        main_sessions = sorted((self.logs_dir / "pi" / "sessions").rglob("*.jsonl"))
+        if len(main_sessions) != 1:
+            raise RuntimeError(f"expected one authoritative main session, found {len(main_sessions)}")
+        identities = [session_identity(path) for path in main_sessions + child_sessions]
+        expected_identity = {
+            "provider": expected_provider,
+            "model": expected_model,
+            "thinking": "xhigh",
+        }
+        if any(identity != expected_identity for identity in identities):
+            raise RuntimeError(f"session provider/model/reasoning mismatch: {identities}")
+        requested_types = agent_types(main_sessions[0])
+        if any(agent_type != "general-purpose" for agent_type in requested_types):
+            raise RuntimeError(f"unexpected subagent type requested: {requested_types}")
+        nested_types = [agent_type for path in transcripts for agent_type in agent_types(path)]
+        if nested_types:
+            raise RuntimeError(f"nested subagent delegation detected: {nested_types}")
 
+        main_usage = usage(main_messages)
+        subagent_usage = [
+            {"trajectory": str(path.relative_to(self.logs_dir)), **usage(assistant_messages(path))}
+            for path in transcripts
+        ]
         totals = usage(all_messages)
         context.n_input_tokens = int(totals["input"]) + int(totals["cacheRead"])
         context.n_output_tokens = int(totals["output"])
         context.n_cache_tokens = int(totals["cacheRead"])
-        context.cost_usd = (
-            float(totals["reportedCost"])
-            if expected_provider != "openai-codex" and totals["reportedCost"]
-            else None
-        )
+        context.cost_usd = None
         context.metadata = {
             "provider": expected_provider,
             "model": expected_model,
@@ -190,6 +173,10 @@ class ReproduciblePi(Pi):
             "main_trajectory": str(main.relative_to(self.logs_dir)),
             "subagent_transcripts": [str(path.relative_to(self.logs_dir)) for path in transcripts],
             "subagent_sessions": [str(path.relative_to(self.logs_dir)) for path in child_sessions],
+            "session_identities": identities,
+            "requested_subagent_types": requested_types,
+            "main_usage": main_usage,
+            "subagent_usage": subagent_usage,
             "usage": totals,
             "oauth_cost_note": (
                 "Pi usage retained; no monetary cost asserted for subscription-backed OAuth"
