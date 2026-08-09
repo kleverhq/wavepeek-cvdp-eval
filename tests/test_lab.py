@@ -19,6 +19,11 @@ class FrozenSelectionTests(unittest.TestCase):
     def test_exact_model_profiles(self):
         lab.check()
 
+    def test_unlocked_model_profile_is_rejected(self):
+        with patch.dict(lab.MODEL_PROFILES, {"unlocked-profile": {}}, clear=False):
+            with self.assertRaisesRegex(ValueError, "model profile lock mismatch"):
+                lab.check()
+
     def test_smoke_is_exactly_four_trials(self):
         args = argparse.Namespace(selector="smoke")
         self.assertEqual(lab.resolve_matrix(args)["trial_count"], 4)

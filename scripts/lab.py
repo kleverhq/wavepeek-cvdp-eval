@@ -120,6 +120,12 @@ def check() -> None:
     experiment_lock = json.loads(EXPERIMENT_LOCK.read_text())
     config = json.loads(CONFIG.read_text())
 
+    locked_profiles = set(experiment_lock["model_configs"])
+    if locked_profiles != set(MODEL_PROFILES):
+        raise ValueError(
+            f"model profile lock mismatch: configured={sorted(MODEL_PROFILES)}, locked={sorted(locked_profiles)}"
+        )
+
     pinned_files = {
         SOURCES_LOCK: experiment_lock["cvdp"]["sources_lock_sha256"],
         ROOT / experiment_lock["cvdp"]["runner_requirements_path"]: experiment_lock["cvdp"]["runner_requirements_sha256"],
