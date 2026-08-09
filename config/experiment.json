@@ -1,7 +1,12 @@
 {
   "schema_version": 1,
   "models": [
+    "openai-codex-gpt-5.6-luna-medium",
     "openai-codex-gpt-5.6-luna-xhigh",
+    "openai-codex-gpt-5.6-terra-medium",
+    "openai-codex-gpt-5.6-terra-xhigh",
+    "openai-codex-gpt-5.6-sol-low",
+    "openai-codex-gpt-5.6-sol-high",
     "openrouter-deepseek-v4-flash-0731-xhigh"
   ],
   "arms": [

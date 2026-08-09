@@ -17,11 +17,27 @@ class FrozenSelectionTests(unittest.TestCase):
         self.assertEqual(sum(row["split"] == "heavy" for row in rows), 8)
 
     def test_exact_model_profiles(self):
+        expected = {
+            "openai-codex-gpt-5.6-luna-medium": ("openai-codex/gpt-5.6-luna", "medium"),
+            "openai-codex-gpt-5.6-luna-xhigh": ("openai-codex/gpt-5.6-luna", "xhigh"),
+            "openai-codex-gpt-5.6-sol-high": ("openai-codex/gpt-5.6-sol", "high"),
+            "openai-codex-gpt-5.6-sol-low": ("openai-codex/gpt-5.6-sol", "low"),
+            "openai-codex-gpt-5.6-terra-medium": ("openai-codex/gpt-5.6-terra", "medium"),
+            "openai-codex-gpt-5.6-terra-xhigh": ("openai-codex/gpt-5.6-terra", "xhigh"),
+            "openrouter-deepseek-v4-flash-0731-xhigh": ("openrouter/deepseek/deepseek-v4-flash-0731", "xhigh"),
+        }
+        self.assertEqual(
+            {
+                profile_id: (lab.MODEL_IDS[profile_id], profile["reasoning"])
+                for profile_id, profile in lab.MODEL_PROFILES.items()
+            },
+            expected,
+        )
         lab.check()
 
-    def test_unlocked_model_profile_is_rejected(self):
-        with patch.dict(lab.MODEL_PROFILES, {"unlocked-profile": {}}, clear=False):
-            with self.assertRaisesRegex(ValueError, "model profile lock mismatch"):
+    def test_unlisted_model_profile_is_rejected(self):
+        with patch.dict(lab.MODEL_PROFILES, {"unlisted-profile": {}}, clear=False):
+            with self.assertRaisesRegex(ValueError, "models must match"):
                 lab.check()
 
     def test_smoke_is_exactly_four_trials(self):
@@ -97,7 +113,7 @@ class FrozenSelectionTests(unittest.TestCase):
         with patch.object(lab, "resolve_wavepeek_revision", side_effect=locks):
             matrix = lab.resolve_matrix(args)
         self.assertEqual(matrix["arm_variants"], 3)
-        self.assertEqual(matrix["trial_count"], 6)
+        self.assertEqual(matrix["trial_count"], len(lab.MODEL_PROFILES) * 3)
 
 
 class MaterializationTests(unittest.TestCase):

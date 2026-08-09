@@ -7,7 +7,7 @@
     "sources_lock_sha256": "524adb134aca07d76b9ac7ef63d4f9bb0e3c3c182ca61a2acac83f561226a822",
     "tooling_commit": "8e894cf74414ab1eaea1e2b4e80a02f123df07b6"
   },
-  "experiment_config_sha256": "81dd45f91b213667918f0b4fb709b9e6f873b06d9834189e41b5625b87e2f777",
+  "experiment_config_sha256": "0c54a41b6b749acac9d1fda464f2df22fd79eb0d0c796475284b77715786f197",
   "images": {
     "baseline": {
       "id": "sha256:8578d69839bd67569c9f2cd3e9bf724dafe09c37a0f0186c630c64ab1c475499",
@@ -19,7 +19,12 @@
     }
   },
   "model_configs": {
+    "openai-codex-gpt-5.6-luna-medium": "7266dd81869058f6ee9b1e33b93934723b27f9567da01b728b1ac7eb01b3367a",
     "openai-codex-gpt-5.6-luna-xhigh": "388b686a358106e02eed175ec750b491d18b19bb2b3e7415aa8d88bd4678e4e8",
+    "openai-codex-gpt-5.6-sol-high": "088ce9176a958642bf497a2c9e532af7803d5d14d6d6dcbb72c29244e90d6a54",
+    "openai-codex-gpt-5.6-sol-low": "c748abc571d6e26334f2a5964c13a9767f50327a31858ba775c303b0d270c516",
+    "openai-codex-gpt-5.6-terra-medium": "4f4d3b65e7222f9cd7144d3ec7b1b2da6369a05571f71c862d08ae7e6d937ca5",
+    "openai-codex-gpt-5.6-terra-xhigh": "bc5ada8d8cb6adfd456e73b380b4f4e6b0724ff70e24d1b2fce917694d3273d1",
     "openrouter-deepseek-v4-flash-0731-xhigh": "f657d30bb92f2882347c6ea07678967be495d6ff6aaa08eb43fd745cc7ce4711"
   },
   "node": {

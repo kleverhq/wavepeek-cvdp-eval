@@ -4,10 +4,12 @@
 
 A model profile fixes the provider, model ID, Pi reasoning level, credential source, and provider compatibility settings. Current profiles are in `config/models/`:
 
-- `openai-codex-gpt-5.6-luna-xhigh` — `openai-codex/gpt-5.6-luna`, `xhigh`;
-- `openrouter-deepseek-v4-flash-0731-xhigh` — `openrouter/deepseek/deepseek-v4-flash-0731`, `xhigh`, provider fallback disabled.
+- GPT-5.6 Luna — `medium` and `xhigh`;
+- GPT-5.6 Terra — `medium` and `xhigh`;
+- GPT-5.6 Sol — `low` and `high`;
+- DeepSeek V4 Flash 0731 — `xhigh`, with provider fallback disabled.
 
-The smoke and live preflight intentionally use only these two profiles. Generic experiment selectors discover every locked `config/models/*.json` profile.
+All GPT-5.6 profiles use `openai-codex`; DeepSeek uses `openrouter`. The smoke and live preflight intentionally use only Luna `xhigh` and DeepSeek `xhigh`. Generic experiment selectors discover every locked `config/models/*.json` profile.
 
 ## Credentials
 
@@ -45,11 +47,12 @@ Do not hand-author OAuth records in project documentation or configuration. Auth
        }
 
 2. Ensure the provider/model is represented correctly in `config/pi/models-store.json`. This is the offline Pi model catalog copied into both arm images.
-3. Intentionally rebuild images and regenerate `experiment.lock.json`, which records every profile hash:
+3. Add the profile ID to `config/experiment.json` so the declared and discovered profile sets remain identical.
+4. Intentionally rebuild images and regenerate `experiment.lock.json`, which records every profile hash:
 
        python3 scripts/build_images.py --update-lock
 
-4. Validate without model calls:
+5. Validate without model calls:
 
        just check
        just test
@@ -59,7 +62,7 @@ Do not hand-author OAuth records in project documentation or configuration. Auth
          --arms baseline \
          --attempts 1
 
-5. Run a small selected cell when live validation is intended:
+6. Run a small selected cell when live validation is intended:
 
        just run cvdp_agentic_axis_broadcaster_0001 \
          <profile-id> baseline 1 default profile-check

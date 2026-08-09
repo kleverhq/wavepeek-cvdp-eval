@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "openai-codex-gpt-5.6-terra-medium",
+  "provider": "openai-codex",
+  "model": "gpt-5.6-terra",
+  "reasoning": "medium",
+  "credential": {
+    "type": "oauth_file",
+    "provider": "openai-codex",
+    "mount": "/run/secrets/pi-auth.json",
+    "source_environment": "WAVEPEEK_EVAL_AUTH_FILE",
+    "default_source": "~/.pi/agent/auth.json"
+  }
+}

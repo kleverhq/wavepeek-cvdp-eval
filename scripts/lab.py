@@ -120,8 +120,11 @@ def check() -> None:
     experiment_lock = json.loads(EXPERIMENT_LOCK.read_text())
     config = json.loads(CONFIG.read_text())
 
+    configured_profiles = set(MODEL_PROFILES)
+    if set(config["models"]) != configured_profiles:
+        raise ValueError("config/experiment.json models must match config/models profiles")
     locked_profiles = set(experiment_lock["model_configs"])
-    if locked_profiles != set(MODEL_PROFILES):
+    if locked_profiles != configured_profiles:
         raise ValueError(
             f"model profile lock mismatch: configured={sorted(MODEL_PROFILES)}, locked={sorted(locked_profiles)}"
         )
