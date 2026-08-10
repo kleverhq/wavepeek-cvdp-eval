@@ -281,7 +281,7 @@ def task_toml(
     name: str,
     task_id: str,
     arm: str,
-    agent_timeout: int = 3600,
+    agent_timeout: int = 7200,
     verifier_timeout: int = 600,
 ) -> str:
     return f'''schema_version = "1.4"
@@ -347,7 +347,7 @@ def materialize(
     arm: str,
     output_root: Path | None = None,
     treatment_lock: dict | None = None,
-    agent_timeout: int = 3600,
+    agent_timeout: int = 7200,
     verifier_timeout: int = 600,
 ) -> Path:
     if arm not in {"baseline", "wavepeek"}:
@@ -569,14 +569,14 @@ def materialize_dataset(matrix: dict) -> Path:
         if "baseline" in matrix["arms"]:
             materialize(
                 task_id, "baseline", temporary,
-                agent_timeout=matrix.get("agent_timeout_seconds", 3600),
+                agent_timeout=matrix.get("agent_timeout_seconds", 7200),
                 verifier_timeout=matrix.get("verifier_timeout_seconds", 600),
             )
         if "wavepeek" in matrix["arms"]:
             for treatment_lock in matrix["wavepeek_builds"]:
                 materialize(
                     task_id, "wavepeek", temporary, treatment_lock,
-                    matrix.get("agent_timeout_seconds", 3600),
+                    matrix.get("agent_timeout_seconds", 7200),
                     matrix.get("verifier_timeout_seconds", 600),
                 )
     root.parent.mkdir(parents=True, exist_ok=True)

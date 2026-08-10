@@ -42,7 +42,9 @@ class FrozenSelectionTests(unittest.TestCase):
 
     def test_smoke_is_exactly_four_trials(self):
         args = argparse.Namespace(selector="smoke")
-        self.assertEqual(lab.resolve_matrix(args)["trial_count"], 4)
+        matrix = lab.resolve_matrix(args)
+        self.assertEqual(matrix["trial_count"], 4)
+        self.assertEqual(matrix["agent_timeout_seconds"], 7200)
 
     def test_run_settings_are_resolved_into_matrix(self):
         args = argparse.Namespace(

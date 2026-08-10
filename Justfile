@@ -34,7 +34,7 @@ preflight selector="smoke":
     python3 scripts/lab.py preflight --selector "{{selector}}"
 
 # Run a selected matrix through pinned Harbor.
-run tasks="all" models="all" arms="all" attempts="1" revisions="default" name="experiment" concurrency="4" agent_timeout="3600" verifier_timeout="600":
+run tasks="all" models="all" arms="all" attempts="1" revisions="default" name="experiment" concurrency="4" agent_timeout="7200" verifier_timeout="600":
     python3 scripts/lab.py run --tasks "{{tasks}}" --models "{{models}}" --arms "{{arms}}" --attempts "{{attempts}}" --revisions "{{revisions}}" --name "{{name}}" --concurrency "{{concurrency}}" --agent-timeout "{{agent_timeout}}" --verifier-timeout "{{verifier_timeout}}"
 
 # Prove both live provider/model/xhigh profiles and delegated-agent inheritance.

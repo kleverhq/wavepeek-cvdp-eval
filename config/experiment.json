@@ -14,7 +14,7 @@
     "wavepeek"
   ],
   "harbor_commit": "0348989adffbb43bf0b410fd36197333239633f1",
-  "agent_timeout_seconds": 3600,
+  "agent_timeout_seconds": 7200,
   "evaluator_timeout_seconds": 600,
   "default_attempts": 1,
   "default_concurrency": 4,

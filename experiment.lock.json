@@ -7,7 +7,7 @@
     "sources_lock_sha256": "524adb134aca07d76b9ac7ef63d4f9bb0e3c3c182ca61a2acac83f561226a822",
     "tooling_commit": "8e894cf74414ab1eaea1e2b4e80a02f123df07b6"
   },
-  "experiment_config_sha256": "0c54a41b6b749acac9d1fda464f2df22fd79eb0d0c796475284b77715786f197",
+  "experiment_config_sha256": "3b8623879cb78d50ee4f8d1c632fdb8154ec5645fcfa41184180282151c8fc8f",
   "images": {
     "baseline": {
       "id": "sha256:8578d69839bd67569c9f2cd3e9bf724dafe09c37a0f0186c630c64ab1c475499",

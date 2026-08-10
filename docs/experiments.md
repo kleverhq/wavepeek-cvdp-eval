@@ -44,7 +44,7 @@ The complete interface is:
     just run TASKS MODELS ARMS ATTEMPTS REVISIONS NAME \
       [CONCURRENCY] [AGENT_TIMEOUT] [VERIFIER_TIMEOUT]
 
-`TASKS` and `MODELS` accept `all` or comma-separated IDs. `ARMS` accepts `baseline`, `wavepeek`, `all`, or a comma-separated subset. `ATTEMPTS` is a positive integer. `REVISIONS` is `default` or a comma-separated revision list. Attempts are independent replicates. Harbor retries are fixed to zero so a failed scientific outcome is never silently replaced.
+`TASKS` and `MODELS` accept `all` or comma-separated IDs. `ARMS` accepts `baseline`, `wavepeek`, `all`, or a comma-separated subset. `ATTEMPTS` is a positive integer. `REVISIONS` is `default` or a comma-separated revision list. The default agent timeout is 7200 seconds (two hours). Attempts are independent replicates. Harbor retries are fixed to zero so a failed scientific outcome is never silently replaced.
 
 Examples:
 
