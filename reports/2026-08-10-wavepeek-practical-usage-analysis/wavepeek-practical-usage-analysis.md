@@ -2,6 +2,23 @@
 
 Analysis date: 2026-08-10
 
+## Source Experiments
+
+This report is based on the following experiment records in this repository.
+
+Primary 108-trial experiments that form the main usage corpus:
+
+- Luna xhigh: `experiments/2026-08-09_194827Z_luna-xhigh-full-3x_a0015b2a/`
+- Terra xhigh: `experiments/2026-08-10_044313Z_terra-xhigh-full-3x_50674f54/`
+- Sol high: `experiments/2026-08-10_074605Z_sol-high-full-3x_6bcc3773/`
+
+Supplementary six-trial clarification experiments analyzed separately from the headline metrics:
+
+- Luna xhigh Monte Carlo clarification: `experiments/2026-08-10_042702Z_luna-xhigh-monte-carlo-clarification_6cc7fe46/`
+- Terra xhigh AES clarification: `experiments/2026-08-10_072737Z_terra-xhigh-aes0012-verifier-clarification_964a66d9/`
+
+The clarification experiments supplement but do not replace or alter the three primary experiment records.
+
 ## Executive Summary
 
 In the main corpus, the three profiles performed **2,384 audited runs of the WavePeek binary** in **1,827 shell tool calls** across 162 treatment trials. Luna made two additional calls directly through `/opt/wavepeek/bin/wavepeek.real` after discovering a defect in the experimental wrapper, so the actual number of runs in the main corpus is at least 2,386. Clarification runs add another 101 audited calls, but they are not included in the headline metrics because they were executed with different limits and for only two tasks.

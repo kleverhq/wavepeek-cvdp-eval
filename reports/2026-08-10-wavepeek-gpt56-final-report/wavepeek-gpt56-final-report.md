@@ -5,6 +5,23 @@ date: "August 10, 2026"
 lang: en-US
 ---
 
+# Source Experiments
+
+This report is based on the following experiment records in this repository.
+
+Primary 108-trial experiments used for the normalized 324-trial comparison:
+
+- Luna xhigh: `experiments/2026-08-09_194827Z_luna-xhigh-full-3x_a0015b2a/`
+- Terra xhigh: `experiments/2026-08-10_044313Z_terra-xhigh-full-3x_50674f54/`
+- Sol high: `experiments/2026-08-10_074605Z_sol-high-full-3x_6bcc3773/`
+
+Supplementary six-trial clarification experiments used only to interpret the two infrastructure anomalies:
+
+- Luna xhigh Monte Carlo clarification: `experiments/2026-08-10_042702Z_luna-xhigh-monte-carlo-clarification_6cc7fe46/`
+- Terra xhigh AES clarification: `experiments/2026-08-10_072737Z_terra-xhigh-aes0012-verifier-clarification_964a66d9/`
+
+The clarification experiments supplement but do not replace or alter the three primary experiment records.
+
 # Abstract
 
 This study examines not a single model, but a family of three OpenAI GPT-5.6 profiles that were actually used: **Luna xhigh**, **Terra xhigh**, and **Sol high**. The same paired A/B experiment was performed for each profile on 18 CVDP RTL tasks: a baseline without WavePeek and a treatment in which the agent was required to meaningfully apply WavePeek to a waveform before finalizing its solution. The main normalized sample contains **324 trials**: 3 models x 18 tasks x 2 branches x 3 attempts. Including 12 clarification runs for two infrastructure anomalies, 336 trials were actually performed.
