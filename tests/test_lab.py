@@ -45,6 +45,7 @@ class FrozenSelectionTests(unittest.TestCase):
         matrix = lab.resolve_matrix(args)
         self.assertEqual(matrix["trial_count"], 4)
         self.assertEqual(matrix["agent_timeout_seconds"], 7200)
+        self.assertEqual(matrix["verifier_timeout_seconds"], 1800)
 
     def test_run_settings_are_resolved_into_matrix(self):
         args = argparse.Namespace(

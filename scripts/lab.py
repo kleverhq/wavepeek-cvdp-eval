@@ -282,7 +282,7 @@ def task_toml(
     task_id: str,
     arm: str,
     agent_timeout: int = 7200,
-    verifier_timeout: int = 600,
+    verifier_timeout: int = 1800,
 ) -> str:
     return f'''schema_version = "1.4"
 
@@ -348,7 +348,7 @@ def materialize(
     output_root: Path | None = None,
     treatment_lock: dict | None = None,
     agent_timeout: int = 7200,
-    verifier_timeout: int = 600,
+    verifier_timeout: int = 1800,
 ) -> Path:
     if arm not in {"baseline", "wavepeek"}:
         raise ValueError("arm must be baseline or wavepeek")
@@ -570,14 +570,14 @@ def materialize_dataset(matrix: dict) -> Path:
             materialize(
                 task_id, "baseline", temporary,
                 agent_timeout=matrix.get("agent_timeout_seconds", 7200),
-                verifier_timeout=matrix.get("verifier_timeout_seconds", 600),
+                verifier_timeout=matrix.get("verifier_timeout_seconds", 1800),
             )
         if "wavepeek" in matrix["arms"]:
             for treatment_lock in matrix["wavepeek_builds"]:
                 materialize(
                     task_id, "wavepeek", temporary, treatment_lock,
                     matrix.get("agent_timeout_seconds", 7200),
-                    matrix.get("verifier_timeout_seconds", 600),
+                    matrix.get("verifier_timeout_seconds", 1800),
                 )
     root.parent.mkdir(parents=True, exist_ok=True)
     shutil.rmtree(root, ignore_errors=True)
