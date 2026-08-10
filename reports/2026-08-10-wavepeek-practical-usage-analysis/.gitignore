@@ -1,0 +1,4 @@
+# Keep extracted evidence local; only reports and this policy are versioned.
+*
+!.gitignore
+!*.md
