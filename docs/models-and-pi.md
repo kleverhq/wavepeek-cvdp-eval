@@ -24,11 +24,16 @@ Override the location without copying credentials into the repository:
 
     export WAVEPEEK_EVAL_AUTH_FILE=/secure/path/auth.json
 
-An environment-backed profile reads the named variable. The current OpenRouter profile uses:
+An environment-backed profile reads the named variable. OpenRouter profiles use `OPENROUTER_API_KEY`, which can be exported directly or placed in the Git-ignored `.env.local` file loaded automatically by `just`:
 
-    export OPENROUTER_API_KEY=...
+    cp .env.local.example .env.local
+    # Edit .env.local and set OPENROUTER_API_KEY.
 
-The auth file must still exist during preflight, even for an environment-only selection; `{}` is sufficient when every selected profile uses an environment key.
+Restrict the local file after editing:
+
+    chmod 600 .env.local
+
+The auth file must still exist during preflight, even for an environment-only selection; `{}` is sufficient when every selected profile uses an environment key. Commands run directly as `python3 scripts/lab.py ...` do not load `.env.local`; export the variable first or use the supported `just` recipes.
 
 Do not hand-author OAuth records in project documentation or configuration. Authenticate with Pi outside this repository. For each trial, `harbor_adapter.py` stages only the selected provider record as a mode-0600 container secret. The host temporary file is removed in a `finally` block; container cleanup is best-effort and the trial environment is ephemeral. Secret values must never appear in Harbor configuration or experiment artifacts.
 

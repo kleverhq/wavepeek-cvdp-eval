@@ -1,4 +1,6 @@
 set shell := ["bash", "-uc"]
+set dotenv-load := true
+set dotenv-filename := ".env.local"
 
 # List available project commands.
 default:
