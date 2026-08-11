@@ -7,7 +7,7 @@
     "sources_lock_sha256": "524adb134aca07d76b9ac7ef63d4f9bb0e3c3c182ca61a2acac83f561226a822",
     "tooling_commit": "8e894cf74414ab1eaea1e2b4e80a02f123df07b6"
   },
-  "experiment_config_sha256": "871e506ac4b98f6d39e9114ed7f7334628bfbcf08a99abe10ff5ed0b74df8b08",
+  "experiment_config_sha256": "22fdf8b58aa76a37b4e9d478435314454877a9c2390b46935798710a48897fd6",
   "images": {
     "baseline": {
       "id": "sha256:8578d69839bd67569c9f2cd3e9bf724dafe09c37a0f0186c630c64ab1c475499",
@@ -25,7 +25,10 @@
     "openai-codex-gpt-5.6-sol-low": "c748abc571d6e26334f2a5964c13a9767f50327a31858ba775c303b0d270c516",
     "openai-codex-gpt-5.6-terra-medium": "4f4d3b65e7222f9cd7144d3ec7b1b2da6369a05571f71c862d08ae7e6d937ca5",
     "openai-codex-gpt-5.6-terra-xhigh": "bc5ada8d8cb6adfd456e73b380b4f4e6b0724ff70e24d1b2fce917694d3273d1",
-    "openrouter-deepseek-v4-flash-0731-xhigh": "f657d30bb92f2882347c6ea07678967be495d6ff6aaa08eb43fd745cc7ce4711"
+    "openrouter-deepseek-v4-flash-0731-xhigh": "f657d30bb92f2882347c6ea07678967be495d6ff6aaa08eb43fd745cc7ce4711",
+    "openrouter-glm-5.2-xhigh": "77ee78c5504d8ce5f65eead4b9d8d03939318369aba379a52c1ce7cfd64e963a",
+    "openrouter-kimi-k3-max": "dfc6ca71b05edeba494eca3d697fa1f757e1fd5f17614a59e8600f3ba156fdb1",
+    "openrouter-qwen3.8-max-xhigh": "6f370277e4126ecc71419c0868f7831123957dc2a71caa4a0de50880c4990909"
   },
   "node": {
     "image": "node@sha256:dd9d21971ec4395903fa6143c2b9267d048ae01ca6d3ea96f16cb30df6187d94",

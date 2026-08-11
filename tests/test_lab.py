@@ -25,6 +25,9 @@ class FrozenSelectionTests(unittest.TestCase):
             "openai-codex-gpt-5.6-terra-medium": ("openai-codex/gpt-5.6-terra", "medium"),
             "openai-codex-gpt-5.6-terra-xhigh": ("openai-codex/gpt-5.6-terra", "xhigh"),
             "openrouter-deepseek-v4-flash-0731-xhigh": ("openrouter/deepseek/deepseek-v4-flash-0731", "xhigh"),
+            "openrouter-glm-5.2-xhigh": ("openrouter/z-ai/glm-5.2", "xhigh"),
+            "openrouter-kimi-k3-max": ("openrouter/moonshotai/kimi-k3", "max"),
+            "openrouter-qwen3.8-max-xhigh": ("openrouter/qwen/qwen3.8-max", "xhigh"),
         }
         self.assertEqual(
             {

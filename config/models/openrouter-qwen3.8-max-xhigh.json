@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "openrouter-qwen3.8-max-xhigh",
+  "provider": "openrouter",
+  "model": "qwen/qwen3.8-max",
+  "reasoning": "xhigh",
+  "credential": {
+    "type": "environment",
+    "name": "OPENROUTER_API_KEY"
+  },
+  "compat": {
+    "openRouterRouting": {
+      "allow_fallbacks": false
+    }
+  }
+}

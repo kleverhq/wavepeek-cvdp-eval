@@ -7,7 +7,10 @@
     "openai-codex-gpt-5.6-terra-xhigh",
     "openai-codex-gpt-5.6-sol-low",
     "openai-codex-gpt-5.6-sol-high",
-    "openrouter-deepseek-v4-flash-0731-xhigh"
+    "openrouter-deepseek-v4-flash-0731-xhigh",
+    "openrouter-glm-5.2-xhigh",
+    "openrouter-kimi-k3-max",
+    "openrouter-qwen3.8-max-xhigh"
   ],
   "arms": [
     "baseline",

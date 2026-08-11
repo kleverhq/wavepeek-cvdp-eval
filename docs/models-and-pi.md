@@ -7,9 +7,12 @@ A model profile fixes the provider, model ID, Pi reasoning level, credential sou
 - GPT-5.6 Luna — `medium` and `xhigh`;
 - GPT-5.6 Terra — `medium` and `xhigh`;
 - GPT-5.6 Sol — `low` and `high`;
-- DeepSeek V4 Flash 0731 — `xhigh`, with provider fallback disabled.
+- DeepSeek V4 Flash 0731 — `xhigh`;
+- GLM 5.2 — `xhigh`;
+- Kimi K3 — `max`;
+- Qwen3.8 Max — `xhigh`.
 
-All GPT-5.6 profiles use `openai-codex`; DeepSeek uses `openrouter`. The smoke and live preflight intentionally use only Luna `xhigh` and DeepSeek `xhigh`. Generic experiment selectors discover every locked `config/models/*.json` profile.
+All GPT-5.6 profiles use `openai-codex`; the other models use `openrouter` with provider fallback disabled. The smoke and live preflight intentionally use only Luna `xhigh` and DeepSeek `xhigh`. Generic experiment selectors discover every locked `config/models/*.json` profile.
 
 ## Credentials
 

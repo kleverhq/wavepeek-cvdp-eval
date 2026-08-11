@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "openrouter-kimi-k3-max",
+  "provider": "openrouter",
+  "model": "moonshotai/kimi-k3",
+  "reasoning": "max",
+  "credential": {
+    "type": "environment",
+    "name": "OPENROUTER_API_KEY"
+  },
+  "compat": {
+    "openRouterRouting": {
+      "allow_fallbacks": false
+    }
+  }
+}

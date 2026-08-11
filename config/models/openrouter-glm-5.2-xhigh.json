@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "openrouter-glm-5.2-xhigh",
+  "provider": "openrouter",
+  "model": "z-ai/glm-5.2",
+  "reasoning": "xhigh",
+  "credential": {
+    "type": "environment",
+    "name": "OPENROUTER_API_KEY"
+  },
+  "compat": {
+    "openRouterRouting": {
+      "allow_fallbacks": false
+    }
+  }
+}
