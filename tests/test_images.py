@@ -55,6 +55,64 @@ class ImageTests(unittest.TestCase):
             self.assertGreaterEqual(record["duration_seconds"], 0)
             self.assertIn("binary_sha256", record)
 
+    def test_wrapper_ignores_long_non_path_arguments(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "audit.jsonl"
+            for flag in ("--signals", "--eval", "--payload"):
+                arguments = ["--version", flag, "x" * 5000]
+                core = docker("run", "--rm", self.treatment, "/opt/wavepeek/bin/wavepeek.real", *arguments)
+                wrapped = docker(
+                    "run", "--rm", "--user", f"{os.getuid()}:{os.getgid()}",
+                    "-v", f"{directory}:/logs", "-e",
+                    "WAVEPEEK_INVOCATION_LOG=/logs/audit.jsonl", self.treatment,
+                    "wavepeek", *arguments,
+                )
+                self.assertEqual(wrapped.returncode, core.returncode)
+                self.assertEqual(wrapped.stdout, core.stdout)
+                self.assertEqual(wrapped.stderr, core.stderr)
+
+            records = [json.loads(line) for line in log.read_text().splitlines()]
+            self.assertEqual(len(records), 3)
+            self.assertTrue(all(not record["waveform_paths"] for record in records))
+            self.assertTrue(all(not record["source_paths"] for record in records))
+
+    def test_wrapper_guards_long_explicit_path(self):
+        with tempfile.TemporaryDirectory() as directory:
+            arguments = ["--version", f"--waves={'x' * 5000}"]
+            core = docker("run", "--rm", self.treatment, "/opt/wavepeek/bin/wavepeek.real", *arguments)
+            wrapped = docker(
+                "run", "--rm", "--user", f"{os.getuid()}:{os.getgid()}",
+                "-v", f"{directory}:/logs", "-e",
+                "WAVEPEEK_INVOCATION_LOG=/logs/audit.jsonl", self.treatment,
+                "wavepeek", *arguments,
+            )
+            self.assertEqual(wrapped.returncode, core.returncode)
+            self.assertEqual(wrapped.stdout, core.stdout)
+            self.assertEqual(wrapped.stderr, core.stderr)
+
+    def test_wrapper_telemetry_failure_preserves_core_result(self):
+        core = docker("run", "--rm", self.treatment, "/opt/wavepeek/bin/wavepeek.real", "--version")
+        wrapped = docker(
+            "run", "--rm", "-e", "WAVEPEEK_INVOCATION_LOG=/sys/audit.jsonl",
+            self.treatment, "wavepeek", "--version",
+        )
+        self.assertEqual(wrapped.returncode, core.returncode)
+        self.assertEqual(wrapped.stdout, core.stdout)
+        self.assertEqual(wrapped.stderr, core.stderr)
+
+    def test_wrapper_respects_option_terminator(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "decoy.vcd").write_text("not a waveform")
+            docker(
+                "run", "--rm", "--user", f"{os.getuid()}:{os.getgid()}",
+                "-v", f"{directory}:/logs", "-e",
+                "WAVEPEEK_INVOCATION_LOG=/logs/audit.jsonl", self.treatment,
+                "wavepeek", "--version", "--", "--waves", "/logs/decoy.vcd",
+            )
+            record = json.loads((root / "audit.jsonl").read_text())
+            self.assertEqual(record["waveform_paths"], [])
+
     def test_wrapper_retains_queried_waveform(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -73,6 +131,25 @@ class ImageTests(unittest.TestCase):
             self.assertEqual(len(record["retained_waveforms"]), 1)
             retained = root / record["retained_waveforms"][0]["artifact"]
             self.assertEqual(retained.read_bytes(), (root / "test.vcd").read_bytes())
+
+    def test_wrapper_records_only_explicit_file_flags(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ("test.vcd", "pi-auth.json", "decoy.txt"):
+                (root / name).write_text(name)
+            docker(
+                "run", "--rm", "--user", f"{os.getuid()}:{os.getgid()}",
+                "-v", f"{directory}:/logs", "-e",
+                "WAVEPEEK_INVOCATION_LOG=/logs/audit.jsonl", self.treatment,
+                "wavepeek", "--version", "--waves", "/logs/test.vcd",
+                "--source=/logs/pi-auth.json", "--signals", "/logs/decoy.txt",
+            )
+            record = json.loads((root / "audit.jsonl").read_text())
+            self.assertEqual(record["waveform_paths"], ["/logs/test.vcd"])
+            self.assertEqual(record["source_paths"], ["/logs/pi-auth.json"])
+            self.assertEqual(len(record["retained_waveforms"]), 1)
+            self.assertNotIn("retained_sources", record)
+            self.assertFalse((root / "sources-accessed").exists())
 
 
 if __name__ == "__main__":

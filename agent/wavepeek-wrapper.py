@@ -14,26 +14,57 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 BINARY = Path("/opt/wavepeek/bin/wavepeek.real")
-WAVEFORM_SUFFIXES = {".vcd", ".fst", ".fsdb"}
 
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def waveform_paths(arguments: list[str]) -> list[str]:
-    paths: list[str] = []
+def flagged_paths(arguments: list[str], flag: str) -> list[str]:
+    values: list[str] = []
     for index, argument in enumerate(arguments):
-        candidate = argument if index and arguments[index - 1] == "--waves" else argument
-        path = Path(candidate).expanduser()
-        if path.suffix.lower() in WAVEFORM_SUFFIXES or (path.exists() and path.is_file()):
-            try:
-                resolved = str(path.resolve())
-            except OSError:
-                resolved = str(path)
-            if resolved not in paths:
-                paths.append(resolved)
+        if argument == "--":
+            break
+        if index and arguments[index - 1] == flag:
+            values.append(argument)
+        elif argument.startswith(f"{flag}="):
+            values.append(argument.split("=", 1)[1])
+
+    paths: list[str] = []
+    for value in values:
+        path = Path(value).expanduser()
+        try:
+            resolved = str(path.resolve())
+        except OSError:
+            resolved = str(path)
+        if resolved not in paths:
+            paths.append(resolved)
     return paths
+
+
+def retain_files(paths: list[str], root: Path, directory: str) -> list[dict]:
+    retained = []
+    for value in paths:
+        source = Path(value)
+        try:
+            if not source.is_file():
+                continue
+            digest = hashlib.sha256(source.read_bytes()).hexdigest()
+            destination = root / directory / f"{digest}-{source.name}"
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            if not destination.exists():
+                shutil.copyfile(source, destination)
+            retained.append(
+                {
+                    "source": value,
+                    "artifact": str(destination.relative_to(root)),
+                    "sha256": digest,
+                    "size": destination.stat().st_size,
+                }
+            )
+        except OSError:
+            continue
+    return retained
 
 
 def append_record(path: Path, record: dict) -> None:
@@ -53,42 +84,27 @@ def main() -> int:
     finished_at = now()
     log = os.environ.get("WAVEPEEK_INVOCATION_LOG")
     if log:
-        paths = waveform_paths(sys.argv[1:])
-        retained = []
-        for value in paths:
-            source = Path(value)
-            if not source.is_file():
-                continue
-            digest = hashlib.sha256(source.read_bytes()).hexdigest()
-            destination = Path(log).parent / "waveforms-accessed" / f"{digest}-{source.name}"
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            if not destination.exists():
-                shutil.copyfile(source, destination)
-            retained.append(
-                {
-                    "source": value,
-                    "artifact": str(destination.relative_to(Path(log).parent)),
-                    "sha256": digest,
-                    "size": destination.stat().st_size,
-                }
-            )
-        record = {
-            "schema_version": 1,
-            "started_at": started_at,
-            "finished_at": finished_at,
-            "duration_seconds": round(time.monotonic() - started, 6),
-            "cwd": os.getcwd(),
-            "argv": sys.argv[1:],
-            "subcommand": next((arg for arg in sys.argv[1:] if not arg.startswith("-")), None),
-            "waveform_paths": paths,
-            "retained_waveforms": retained,
-            "binary_sha256": hashlib.sha256(BINARY.read_bytes()).hexdigest(),
-            "exit_status": result.returncode,
-        }
         try:
+            root = Path(log).parent
+            waveforms = flagged_paths(sys.argv[1:], "--waves")
+            sources = flagged_paths(sys.argv[1:], "--source")
+            record = {
+                "schema_version": 1,
+                "started_at": started_at,
+                "finished_at": finished_at,
+                "duration_seconds": round(time.monotonic() - started, 6),
+                "cwd": os.getcwd(),
+                "argv": sys.argv[1:],
+                "subcommand": next((arg for arg in sys.argv[1:] if not arg.startswith("-")), None),
+                "waveform_paths": waveforms,
+                "retained_waveforms": retain_files(waveforms, root, "waveforms-accessed"),
+                "source_paths": sources,
+                "binary_sha256": hashlib.sha256(BINARY.read_bytes()).hexdigest(),
+                "exit_status": result.returncode,
+            }
             append_record(Path(log), record)
-        except OSError as error:
-            print(f"wavepeek: could not write invocation log: {error}", file=sys.stderr)
+        except Exception:
+            pass
     return result.returncode
 
 
