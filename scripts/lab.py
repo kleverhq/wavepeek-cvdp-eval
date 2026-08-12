@@ -162,9 +162,9 @@ def check() -> None:
             raise ValueError(f"{name} revision is not a full lowercase Git SHA: {revision}")
     if config["harbor_commit"] != HARBOR_COMMIT:
         raise ValueError("unexpected Harbor revision")
-    if experiment_lock["wavepeek"]["commit"] != "a27a96b557cb7b9df970fbfef65a5c8354befbc9":
-        raise ValueError("WavePeek 2.2.0 commit mismatch")
-    if experiment_lock["wavepeek"]["version_output"] != "wavepeek v2.2.0":
+    if experiment_lock["wavepeek"]["commit"] != "8779507b06f6b77be49f0d934ea9339140a8df2a":
+        raise ValueError("WavePeek 2.2.3 commit mismatch")
+    if experiment_lock["wavepeek"]["version_output"] != "wavepeek v2.2.3":
         raise ValueError("WavePeek version output mismatch")
     if experiment_lock["cvdp"]["selected_manifest_sha256"] != SELECTED_SHA256:
         raise ValueError("experiment lock has the wrong selected manifest digest")

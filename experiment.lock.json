@@ -14,8 +14,8 @@
       "tag": "cvdp-pi-agent:baseline"
     },
     "wavepeek": {
-      "id": "sha256:9cabe3a4dbf08b1e6dad1e10a73b7299cef1f4d295d6277aa12026cbaf9dab6d",
-      "tag": "cvdp-pi-agent:wavepeek-a27a96b557cb"
+      "id": "sha256:b41669fbab6a806491e7dc1b4cc1270aab197ece5d3f85f7df498b5058047820",
+      "tag": "cvdp-pi-agent:wavepeek-8779507b06f6"
     }
   },
   "model_configs": {
@@ -80,14 +80,14 @@
     }
   },
   "wavepeek": {
-    "binary_sha256": "12cf2b6e672bc13bd89bd2a33543c1e9539d7fc57fe05511b36f4023f0b173a8",
-    "cargo_lock_sha256": "ae1db39ff2cbca9959e3076e46616b8adcdb7e8f8e9c9ea9851335d852d93b50",
-    "commit": "a27a96b557cb7b9df970fbfef65a5c8354befbc9",
-    "docs_sha256": "2d7d42c92f081331cc0b6382ba3fa4fbcf7f62f344c15b93f92396b32a9d021f",
+    "binary_sha256": "04c45bf4176ee74c380632cf6ab14450ce4e2f879072c156a4e784cad81c1404",
+    "cargo_lock_sha256": "2b1a314a078520740f68ddf4d8d6bd8295e1f862181a75c6a1dbc871a4d6e40a",
+    "commit": "8779507b06f6b77be49f0d934ea9339140a8df2a",
+    "docs_sha256": "f9f10e8a4a561672b4fc37e925d7c73409ff2b2fdce7905f490da309713028ac",
     "repository": "https://github.com/kleverhq/wavepeek",
     "skill_sha256": "b3bd702ff82715d37f33afd00fbab960ca5b271d3fd23e4455a23fa2dcfb776d",
-    "source_archive_sha256": "77913240ce705f13940662fb96e0414470d9855c1a4a15d37116e04d4c0b77d9",
-    "source_artifact": "artifacts/sources/wavepeek-a27a96b557cb7b9df970fbfef65a5c8354befbc9-77913240ce705f13940662fb96e0414470d9855c1a4a15d37116e04d4c0b77d9.tar",
-    "version_output": "wavepeek v2.2.0"
+    "source_archive_sha256": "39d4e5f2d4c789d0d15c6ac47830c72c40bf20cdbd2f5f453f31f5936499d45b",
+    "source_artifact": "artifacts/sources/wavepeek-8779507b06f6b77be49f0d934ea9339140a8df2a-39d4e5f2d4c789d0d15c6ac47830c72c40bf20cdbd2f5f453f31f5936499d45b.tar",
+    "version_output": "wavepeek v2.2.3"
   }
 }

@@ -37,7 +37,7 @@ class ImageTests(unittest.TestCase):
         )
         result = docker("run", "--rm", self.treatment, "sh", "-lc", command)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.splitlines()[0], "wavepeek v2.2.0")
+        self.assertEqual(result.stdout.splitlines()[0], "wavepeek v2.2.3")
 
     def test_wrapper_preserves_status_and_records_audit(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -48,7 +48,7 @@ class ImageTests(unittest.TestCase):
                 "wavepeek", "--version",
             )
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(result.stdout.strip(), "wavepeek v2.2.0")
+            self.assertEqual(result.stdout.strip(), "wavepeek v2.2.3")
             record = json.loads(log.read_text())
             self.assertEqual(record["argv"], ["--version"])
             self.assertEqual(record["exit_status"], 0)
