@@ -14,7 +14,7 @@ This repository runs controlled CVDP comparisons between a clean Pi baseline and
 6. `harbor_adapter.py` stages only the selected provider credential and starts `harbor/pi_runner.py` inside the task container.
 7. The runner creates an isolated Pi home, exposes only the pinned pi-subagents extension and `general-purpose` child type, and retains parent and child sessions.
 8. Harbor mounts the hidden CVDP tests after agent execution. Benchmark reward and infrastructure status remain separate.
-9. `scripts/lab.py` normalizes trajectories, usage, patches, verifier output, waveform evidence, and WavePeek calls, then seals the artifact tree with `run-checksums.json`.
+9. `scripts/lab.py` normalizes trajectories, usage, patches, verifier output, and WavePeek calls, then seals the artifact tree with `run-checksums.json`.
 
 ## Arms
 
@@ -22,7 +22,7 @@ Both arms derive from the same `common` stage in `agent/Dockerfile`.
 
 The baseline contains the simulator, Pi, pi-subagents, and the common runner. Tests reject any WavePeek binary, path, skill, documentation, instruction, or environment marker in this arm.
 
-The treatment adds a WavePeek build from one resolved Git commit. `agent/wavepeek-wrapper.py` transparently invokes the real binary, preserves its output and exit status, records every call, and retains queried waveforms. A treatment trial is compliant only after a successful supported query against a retained waveform whose hash matches the audit record.
+The treatment adds a WavePeek build from one resolved Git commit. `agent/wavepeek-wrapper.py` transparently invokes the real binary, preserves its output and exit status, and records every call. A treatment trial is compliant only after a successful supported query against an explicitly supplied waveform path.
 
 ## Component boundaries
 

@@ -1,4 +1,3 @@
-import hashlib
 import json
 import tempfile
 import unittest
@@ -20,7 +19,6 @@ class ResultNormalizationTests(unittest.TestCase):
                 "artifacts/logs/artifacts/final.patch",
                 "artifacts/logs/artifacts/agent-runtime.json",
                 "artifacts/logs/artifacts/main-session-stats.json",
-                "artifacts/logs/artifacts/waveforms.json",
                 "verifier/test-stdout.txt",
                 "verifier/reward.txt",
                 "config.json",
@@ -49,17 +47,12 @@ class ResultNormalizationTests(unittest.TestCase):
                 "exception_info": None,
             }
             (trial / "result.json").write_text(json.dumps(result))
-            retained_waveform = trial / "artifacts/logs/artifacts/waveforms/out.vcd"
-            retained_waveform.parent.mkdir(parents=True, exist_ok=True)
-            retained_waveform.write_bytes(b"waveform")
-            retained_hash = hashlib.sha256(retained_waveform.read_bytes()).hexdigest()
             (trial / "artifacts/logs/artifacts/wavepeek-invocations.jsonl").write_text(
                 json.dumps(
                     {
                         "started_at": "2026-01-01T00:00:01Z",
                         "subcommand": "signal",
                         "waveform_paths": ["/app/out.vcd"],
-                        "retained_waveforms": [{"artifact": "waveforms/out.vcd", "sha256": retained_hash}],
                         "exit_status": 0,
                     }
                 )

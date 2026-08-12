@@ -894,24 +894,16 @@ def parse_jsonl_optional(path: Path) -> list[dict]:
     return read_jsonl(path) if path.is_file() else []
 
 
-def compliant_wavepeek_record(record: dict, artifact_root: Path) -> bool:
-    if record.get("exit_status") != 0 or record.get("subcommand") not in {"info", "scope", "signal", "change", "value", "extract"}:
-        return False
-    waveform_paths = record.get("waveform_paths") or []
-    retained = record.get("retained_waveforms") or []
-    if not waveform_paths or not retained:
-        return False
-    if not all(str(path).lower().endswith((".vcd", ".vcd.gz", ".fst", ".fsdb")) for path in waveform_paths):
-        return False
-    root = artifact_root.resolve()
-    for item in retained:
-        relative = Path(str(item.get("artifact", "")))
-        if relative.is_absolute() or ".." in relative.parts or not item.get("sha256"):
-            return False
-        target = (artifact_root / relative).resolve()
-        if root not in target.parents or not target.is_file() or sha256(target) != item["sha256"]:
-            return False
-    return True
+def compliant_wavepeek_record(record: dict) -> bool:
+    return (
+        record.get("exit_status") == 0
+        and record.get("subcommand") in {"info", "scope", "signal", "change", "value", "extract"}
+        and bool(record.get("waveform_paths"))
+        and all(
+            str(path).lower().endswith((".vcd", ".vcd.gz", ".fst", ".fsdb"))
+            for path in record["waveform_paths"]
+        )
+    )
 
 
 def elapsed_seconds(result: dict) -> float | None:
@@ -1031,7 +1023,7 @@ def render_analysis_markdown(manifest: dict, trials: list[dict]) -> str:
             "",
             f"Compact result: {complete}/{len(trials)} infrastructure-complete, {passes}/{complete} benchmark passes among infrastructure-complete trials, "
             f"{delegated} delegated trajectory/trajectories, {calls} audited WavePeek calls, "
-            f"{successful_queries} successful retained-waveform queries, and {wavepeek_duration:.6f}s total WavePeek CLI time.",
+            f"{successful_queries} successful waveform queries, and {wavepeek_duration:.6f}s total WavePeek CLI time.",
             "",
             f"Trajectory observation (subagent counts by cell): {delegation_observations}. Delegation was permitted and measured, not forced; exact paths are in summary.json.",
             "",
@@ -1085,10 +1077,7 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
         artifact_prefix = Path("artifacts/logs/artifacts")
         artifact_root = trial_dir / artifact_prefix
         invocations = parse_jsonl_optional(artifact_root / "wavepeek-invocations.jsonl")
-        successful = [
-            record for record in invocations
-            if compliant_wavepeek_record(record, artifact_root)
-        ]
+        successful = [record for record in invocations if compliant_wavepeek_record(record)]
         required = [
             "agent/pi.txt",
             "agent/pi/sessions/main.jsonl",
@@ -1096,7 +1085,6 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
             "artifacts/logs/artifacts/final.patch",
             "artifacts/logs/artifacts/agent-runtime.json",
             "artifacts/logs/artifacts/main-session-stats.json",
-            "artifacts/logs/artifacts/waveforms.json",
             "verifier/test-stdout.txt",
             "verifier/reward.txt",
             "config.json",
@@ -1148,7 +1136,6 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
             },
             "patch": str(artifact_prefix / "final.patch"),
             "verifier_output": "verifier/test-stdout.txt",
-            "waveforms": str(artifact_prefix / "waveforms.json"),
             "wavepeek": {
                 "total_calls": len(invocations),
                 "successful_meaningful_calls": len(successful),

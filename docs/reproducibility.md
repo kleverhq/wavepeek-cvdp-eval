@@ -57,8 +57,7 @@ The full Harbor tree retains, when applicable:
 - main, child, and total token/cache usage;
 - final patch and Git status;
 - exact model and reasoning identity;
-- waveform files and hashes;
-- WavePeek invocation audit and retained queried waveforms.
+- WavePeek invocation audit, including explicitly supplied waveform paths.
 
 Provider-reported cost is currently unavailable and remains `null`. Pi catalog calculations are retained separately as labeled estimates and are not presented as billing evidence.
 
@@ -68,7 +67,7 @@ Provider-reported cost is currently unavailable and remains `null`. Pi catalog c
 
 A continuation creates a new experiment and records the parent manifest path and hash. It does not modify the parent. Harbor retries remain zero; multiple attempts are explicit independent replicates.
 
-Compact reports are versioned. Raw `experiments/*/artifacts/` directories are intentionally ignored by Git because they contain large trajectories, source archives, waveforms, and Harbor payloads. Back up or publish those directories separately when full evidence must survive beyond the local workspace; the Git repository alone does not contain raw trials.
+Compact reports are versioned. Raw `experiments/*/artifacts/` directories are intentionally ignored by Git because they contain large trajectories, source archives, and Harbor payloads. Back up or publish those directories separately when full evidence must survive beyond the local workspace; the Git repository alone does not contain raw trials.
 
 ## Arm and verifier isolation
 

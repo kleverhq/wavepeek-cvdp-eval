@@ -10,11 +10,11 @@
   "experiment_config_sha256": "3e26f03c17e8247a463cc56e9f53a5992012b7b2800f26e2c4e710ca83c72436",
   "images": {
     "baseline": {
-      "id": "sha256:8578d69839bd67569c9f2cd3e9bf724dafe09c37a0f0186c630c64ab1c475499",
+      "id": "sha256:19936f2ec50ec8b96d5ae12edf7f73fa1c84233ca6a271be5847d7035d9601db",
       "tag": "cvdp-pi-agent:baseline"
     },
     "wavepeek": {
-      "id": "sha256:b41669fbab6a806491e7dc1b4cc1270aab197ece5d3f85f7df498b5058047820",
+      "id": "sha256:a7df33697d6b0800d04a76f170ccd2fc2c2e4f02427cf5fe4f25e8aa9cfe4cef",
       "tag": "cvdp-pi-agent:wavepeek-8779507b06f6"
     }
   },

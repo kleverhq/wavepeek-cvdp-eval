@@ -6,7 +6,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import shutil
 import subprocess
 import sys
 import time
@@ -42,31 +41,6 @@ def flagged_paths(arguments: list[str], flag: str) -> list[str]:
     return paths
 
 
-def retain_files(paths: list[str], root: Path, directory: str) -> list[dict]:
-    retained = []
-    for value in paths:
-        source = Path(value)
-        try:
-            if not source.is_file():
-                continue
-            digest = hashlib.sha256(source.read_bytes()).hexdigest()
-            destination = root / directory / f"{digest}-{source.name}"
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            if not destination.exists():
-                shutil.copyfile(source, destination)
-            retained.append(
-                {
-                    "source": value,
-                    "artifact": str(destination.relative_to(root)),
-                    "sha256": digest,
-                    "size": destination.stat().st_size,
-                }
-            )
-        except OSError:
-            continue
-    return retained
-
-
 def append_record(path: Path, record: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     data = (json.dumps(record, separators=(",", ":")) + "\n").encode()
@@ -85,7 +59,6 @@ def main() -> int:
     log = os.environ.get("WAVEPEEK_INVOCATION_LOG")
     if log:
         try:
-            root = Path(log).parent
             waveforms = flagged_paths(sys.argv[1:], "--waves")
             sources = flagged_paths(sys.argv[1:], "--source")
             record = {
@@ -97,7 +70,6 @@ def main() -> int:
                 "argv": sys.argv[1:],
                 "subcommand": next((arg for arg in sys.argv[1:] if not arg.startswith("-")), None),
                 "waveform_paths": waveforms,
-                "retained_waveforms": retain_files(waveforms, root, "waveforms-accessed"),
                 "source_paths": sources,
                 "binary_sha256": hashlib.sha256(BINARY.read_bytes()).hexdigest(),
                 "exit_status": result.returncode,
