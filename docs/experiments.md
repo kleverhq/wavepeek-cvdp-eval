@@ -44,7 +44,7 @@ The complete interface is:
     just run TASKS MODELS ARMS ATTEMPTS REVISIONS NAME \
       [CONCURRENCY] [AGENT_TIMEOUT] [VERIFIER_TIMEOUT]
 
-`TASKS` and `MODELS` accept `all` or comma-separated IDs. `ARMS` accepts `baseline`, `wavepeek`, `all`, or a comma-separated subset. `ATTEMPTS` is a positive integer. `REVISIONS` is `default` or a comma-separated revision list. The default agent timeout is 7200 seconds (two hours), and the default verifier timeout is 1800 seconds (30 minutes). Attempts are independent replicates. Harbor retries are fixed to zero so a failed scientific outcome is never silently replaced.
+`TASKS` and `MODELS` accept `all` or comma-separated IDs. `ARMS` accepts `baseline`, `wavepeek`, `all`, or a comma-separated subset. `ATTEMPTS` is a positive integer. `REVISIONS` is `default` or a comma-separated revision list. The default agent timeout is 7200 seconds (two hours), and the default verifier timeout is 1800 seconds (30 minutes). Attempts are independent replicates. A terminal assistant generation error is infrastructure failure. Harbor retries transient rate-limit, server-overload, dropped-response, and network failures at most five times, waiting 30 seconds before the first retry and 60 seconds before each later retry. Benchmark failures and non-transient exceptions are never retried.
 
 Examples:
 
@@ -76,7 +76,7 @@ Every selector resolves to a full commit before Harbor starts. Candidate source 
 
 ## Harbor ownership
 
-The supported entry point is `Justfile`; do not hand-build a second trial loop around Harbor. `scripts/lab.py` emits one Harbor JobConfig containing the selected task dataset, one agent configuration per model profile, attempts, concurrency, zero retries, output directory, and job name. Agent and verifier timeouts are retained in each generated Harbor task configuration.
+The supported entry point is `Justfile`; do not hand-build a second trial loop around Harbor. `scripts/lab.py` emits one Harbor JobConfig containing the selected task dataset, one agent configuration per model profile, attempts, concurrency, bounded retries for terminal assistant errors, output directory, and job name. Agent and verifier timeouts are retained in each generated Harbor task configuration.
 
 Harbor's checkout and Python environment live at `.cache/harbor/source`. Refresh it to the pinned revision with:
 

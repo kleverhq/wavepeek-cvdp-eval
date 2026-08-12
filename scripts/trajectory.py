@@ -31,6 +31,13 @@ def assistant_messages(path: Path) -> list[dict[str, Any]]:
     return messages
 
 
+def terminal_assistant_error(path: Path) -> dict[str, Any] | None:
+    messages = assistant_messages(path)
+    if messages and messages[-1].get("stopReason") == "error":
+        return messages[-1]
+    return None
+
+
 def usage(messages: list[dict[str, Any]]) -> dict[str, float | int | None]:
     total: dict[str, float | int | None] = {
         "input": 0,

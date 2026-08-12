@@ -21,7 +21,7 @@
   "evaluator_timeout_seconds": 1800,
   "default_attempts": 1,
   "default_concurrency": 4,
-  "harbor_max_retries": 0,
+  "harbor_max_retries": 5,
   "subagents": {
     "fallbackSubagent": "none",
     "disableDefaultAgents": true,

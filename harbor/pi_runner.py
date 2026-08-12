@@ -213,6 +213,7 @@ def main() -> int:
     settled = False
     pending = set()
     records: dict[str, dict] = {}
+    last_assistant: dict | None = None
     with (logs / "pi.txt").open("w") as output:
         assert process.stdout is not None
         for line in process.stdout:
@@ -228,6 +229,9 @@ def main() -> int:
                 output.write(compact + "\n")
                 output.flush()
                 print(compact, flush=True)
+            message = event.get("message") or {}
+            if event.get("type") == "message_end" and message.get("role") == "assistant":
+                last_assistant = message
             if event.get("type") == "agent_settled" and not settled:
                 settled = True
                 pending = {"state", "final", "stats"}
@@ -266,6 +270,12 @@ def main() -> int:
     (artifacts / "final-response.txt").write_text(records["final"]["data"].get("text") or "")
     write_json(artifacts / "main-session-stats.json", records["stats"]["data"], 0o644)
     write_json(artifacts / "waveforms.json", retained_waveforms, 0o644)
+    if last_assistant and last_assistant.get("stopReason") == "error":
+        print(
+            f"terminal assistant error: {last_assistant.get('errorMessage') or 'unknown error'}",
+            file=sys.stderr,
+        )
+        return 75
     return 0
 
 

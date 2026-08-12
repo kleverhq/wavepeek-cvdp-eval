@@ -17,6 +17,11 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
+if __package__:
+    from scripts.trajectory import terminal_assistant_error
+else:
+    from trajectory import terminal_assistant_error
+
 ROOT = Path(__file__).resolve().parents[1]
 SELECTION = ROOT / "selection" / "selected.jsonl"
 SOURCES_LOCK = ROOT / "selection" / "sources.lock.json"
@@ -173,8 +178,12 @@ def check() -> None:
     for profile_id, expected_model in REQUIRED_MODEL_IDS.items():
         if profiles.get(profile_id) != expected_model or MODEL_PROFILES[profile_id]["reasoning"] != "xhigh":
             raise ValueError(f"required model profile mismatch: {profile_id}")
-    if json.loads((ROOT / "config" / "models" / "openrouter-deepseek-v4-flash-0731-xhigh.json").read_text())["compat"]["openRouterRouting"]["allow_fallbacks"] is not False:
-        raise ValueError("OpenRouter fallbacks must be disabled")
+    if any(
+        profile.get("compat", {}).get("openRouterRouting", {}).get("allow_fallbacks") is not True
+        for profile in MODEL_PROFILES.values()
+        if profile["provider"] == "openrouter"
+    ):
+        raise ValueError("OpenRouter upstream provider fallbacks must be enabled")
 
     subagents = config["subagents"]
     required = {
@@ -587,6 +596,7 @@ def materialize_dataset(matrix: dict) -> Path:
 
 def resolved_job(matrix: dict, name: str) -> tuple[dict, list[str]]:
     source_dataset = materialize_dataset(matrix)
+    config = json.loads(CONFIG.read_text())
     run_id = new_experiment_id(name)
     experiment_dir = EXPERIMENTS / run_id
     run_dir = experiment_dir / "artifacts"
@@ -598,7 +608,20 @@ def resolved_job(matrix: dict, name: str) -> tuple[dict, list[str]]:
         "jobs_dir": str(harbor_dir),
         "n_attempts": matrix["attempts"],
         "n_concurrent_trials": matrix["concurrency"],
-        "retry": {"max_retries": 0},
+        "retry": {
+            "max_retries": config["harbor_max_retries"],
+            "include_exceptions": [
+                "ApiRateLimitError",
+                "ApiInternalServerError",
+                "ApiOverloadedError",
+                "ApiConnectionClosedError",
+                "ApiResponseStalledError",
+                "NetworkConnectionError",
+            ],
+            "wait_multiplier": 2,
+            "min_wait_sec": 30,
+            "max_wait_sec": 60,
+        },
         "agents": [
             {
                 "name": "harbor_adapter:ReproduciblePi",
@@ -929,11 +952,17 @@ def analyze_summary(trials: list[dict]) -> dict:
     for trial in trials:
         grouped.setdefault((trial["task_id"], trial["model"]), []).append(trial)
     for (task_id, model), group in sorted(grouped.items()):
-        baseline = [trial for trial in group if trial["arm"] == "baseline"]
+        baseline = [
+            trial for trial in group
+            if trial["arm"] == "baseline" and trial["infrastructure_status"] == "complete"
+        ]
         treatment_arms = sorted({trial["arm"] for trial in group if trial["arm"].startswith("wavepeek@")})
         for treatment_arm in treatment_arms:
-            treatment = [trial for trial in group if trial["arm"] == treatment_arm]
-            if not baseline:
+            treatment = [
+                trial for trial in group
+                if trial["arm"] == treatment_arm and trial["infrastructure_status"] == "complete"
+            ]
+            if not baseline or not treatment:
                 continue
             baseline_runtimes = [trial["runtime_seconds"] for trial in baseline if trial["runtime_seconds"] is not None]
             treatment_runtimes = [trial["runtime_seconds"] for trial in treatment if trial["runtime_seconds"] is not None]
@@ -985,8 +1014,9 @@ def render_analysis_markdown(manifest: dict, trials: list[dict]) -> str:
             f"{len(trial['trajectories']['subagents'])} | {trial['wavepeek']['total_calls']} / "
             f"{trial['wavepeek']['successful_meaningful_calls']} / {trial['wavepeek']['total_duration_seconds']:.6f}s |"
         )
-    complete = sum(trial["infrastructure_status"] == "complete" for trial in trials)
-    passes = sum(bool(trial["benchmark_pass"]) for trial in trials)
+    valid_trials = [trial for trial in trials if trial["infrastructure_status"] == "complete"]
+    complete = len(valid_trials)
+    passes = sum(bool(trial["benchmark_pass"]) for trial in valid_trials)
     delegated = sum(len(trial["trajectories"]["subagents"]) for trial in trials)
     calls = sum(trial["wavepeek"]["total_calls"] for trial in trials)
     successful_queries = sum(trial["wavepeek"]["successful_meaningful_calls"] for trial in trials)
@@ -999,7 +1029,7 @@ def render_analysis_markdown(manifest: dict, trials: list[dict]) -> str:
     lines.extend(
         [
             "",
-            f"Compact result: {complete}/{len(trials)} infrastructure-complete, {passes}/{len(trials)} benchmark passes, "
+            f"Compact result: {complete}/{len(trials)} infrastructure-complete, {passes}/{complete} benchmark passes among infrastructure-complete trials, "
             f"{delegated} delegated trajectory/trajectories, {calls} audited WavePeek calls, "
             f"{successful_queries} successful retained-waveform queries, and {wavepeek_duration:.6f}s total WavePeek CLI time.",
             "",
@@ -1076,6 +1106,7 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
         ]
         missing = [relative for relative in required if not (trial_dir / relative).is_file()]
         exception = result.get("exception_info")
+        terminal_error = terminal_assistant_error(trial_dir / "agent/pi.txt") if (trial_dir / "agent/pi.txt").is_file() else None
         if exception:
             errors.append(
                 f"{trial_dir.name}: infrastructure exception "
@@ -1083,6 +1114,11 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
             )
         elif missing:
             errors.append(f"{trial_dir.name}: missing required evidence: {missing}")
+        if terminal_error:
+            errors.append(
+                f"{trial_dir.name}: terminal assistant error: "
+                f"{terminal_error.get('errorMessage') or 'unknown error'}"
+            )
         reward = ((result.get("verifier_result") or {}).get("rewards") or {}).get("reward")
         trial = {
             "trial_name": trial_dir.name,
@@ -1091,8 +1127,9 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
             "model": model,
             "arm": arm,
             "attempt": attempt,
-            "infrastructure_status": "complete" if not exception and not missing else "failed",
+            "infrastructure_status": "complete" if not exception and not missing and not terminal_error else "failed",
             "exception": exception,
+            "terminal_assistant_error": terminal_error.get("errorMessage") if terminal_error else None,
             "benchmark_pass": reward == 1 or reward == 1.0,
             "reward": reward,
             "runtime_seconds": elapsed_seconds(result),
@@ -1122,7 +1159,7 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
             },
             "missing_evidence": missing,
         }
-        if arm.startswith("wavepeek@") and not trial["wavepeek"]["compliant"] and not exception:
+        if arm.startswith("wavepeek@") and not trial["wavepeek"]["compliant"] and trial["infrastructure_status"] == "complete":
             errors.append(f"{trial_dir.name}: treatment did not successfully query a waveform with WavePeek")
         trials.append(trial)
     expected_cells = {
@@ -1245,7 +1282,11 @@ def execute_job(manifest: dict, command: list[str]) -> int:
             },
             "compact_results": {
                 "infrastructure_complete": sum(trial["infrastructure_status"] == "complete" for trial in summary["trials"]),
-                "benchmark_passes": sum(bool(trial["benchmark_pass"]) for trial in summary["trials"]),
+                "benchmark_passes": sum(
+                    bool(trial["benchmark_pass"])
+                    for trial in summary["trials"]
+                    if trial["infrastructure_status"] == "complete"
+                ),
                 "wavepeek_calls": sum(trial["wavepeek"]["total_calls"] for trial in summary["trials"]),
                 "wavepeek_successful_queries": sum(trial["wavepeek"]["successful_meaningful_calls"] for trial in summary["trials"]),
                 "wavepeek_duration_seconds": sum(trial["wavepeek"]["total_duration_seconds"] for trial in summary["trials"]),

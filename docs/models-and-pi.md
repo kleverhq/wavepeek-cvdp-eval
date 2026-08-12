@@ -12,7 +12,7 @@ A model profile fixes the provider, model ID, Pi reasoning level, credential sou
 - Kimi K3 — `max`;
 - Qwen3.8 Max — `xhigh`.
 
-All GPT-5.6 profiles use `openai-codex`; the other models use `openrouter` with provider fallback disabled. The smoke and live preflight intentionally use only Luna `xhigh` and DeepSeek `xhigh`. Generic experiment selectors discover every locked `config/models/*.json` profile.
+All GPT-5.6 profiles use `openai-codex`; the other models use `openrouter` with upstream provider fallback enabled. The model ID stays fixed while OpenRouter can switch serving providers after an upstream failure. The smoke and live preflight intentionally use only Luna `xhigh` and DeepSeek `xhigh`. Generic experiment selectors discover every locked `config/models/*.json` profile.
 
 ## Credentials
 
@@ -92,7 +92,7 @@ For each trial, `harbor/pi_runner.py` builds an isolated temporary Pi home and:
 - enables the WavePeek skill only in the treatment image;
 - retains the main event stream, native session, final response, and usage.
 
-The Harbor adapter validates the final main and child provider/model/reasoning identities, preserves the final Git patch and status, and fails closed on fallback or incomplete evidence.
+The Harbor adapter validates the final main and child Pi provider/model/reasoning identities, preserves the final Git patch and status, and fails closed on incomplete evidence. OpenRouter's internal serving-provider fallback does not change that Pi identity.
 
 ## pi-subagents policy
 

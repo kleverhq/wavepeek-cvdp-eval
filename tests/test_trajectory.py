@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.trajectory import agent_types, assistant_messages, session_identity, usage
+from scripts.trajectory import agent_types, assistant_messages, session_identity, terminal_assistant_error, usage
 
 
 class TrajectoryTests(unittest.TestCase):
@@ -63,6 +63,42 @@ class TrajectoryTests(unittest.TestCase):
                 "reportedCost": None,
             },
         )
+
+    def test_terminal_assistant_error(self):
+        self.write(
+            [
+                {
+                    "type": "message_end",
+                    "message": {"role": "assistant", "stopReason": "stop", "content": []},
+                },
+                {
+                    "type": "message_end",
+                    "message": {
+                        "role": "assistant",
+                        "stopReason": "error",
+                        "errorMessage": "429: temporarily rate-limited",
+                        "content": [],
+                    },
+                },
+            ]
+        )
+        self.assertEqual(
+            terminal_assistant_error(self.path)["errorMessage"],
+            "429: temporarily rate-limited",
+        )
+        self.write(
+            [
+                {
+                    "type": "message_end",
+                    "message": {"role": "assistant", "stopReason": "error", "content": []},
+                },
+                {
+                    "type": "message_end",
+                    "message": {"role": "assistant", "stopReason": "stop", "content": []},
+                },
+            ]
+        )
+        self.assertIsNone(terminal_assistant_error(self.path))
 
     def test_identity_and_agent_type(self):
         self.write(

@@ -66,6 +66,28 @@ class FrozenSelectionTests(unittest.TestCase):
         self.assertEqual(matrix["concurrency"], 1)
         self.assertEqual(matrix["agent_timeout_seconds"], 123)
         self.assertEqual(matrix["verifier_timeout_seconds"], 45)
+        with (
+            patch.object(lab, "materialize_dataset", return_value=lab.ROOT / ".cache" / "tasks"),
+            patch.object(lab, "new_experiment_id", return_value="retry-test"),
+        ):
+            manifest, _ = lab.resolved_job(matrix, "retry-test")
+        self.assertEqual(
+            manifest["resolved_harbor_job"]["retry"],
+            {
+                "max_retries": 5,
+                "include_exceptions": [
+                    "ApiRateLimitError",
+                    "ApiInternalServerError",
+                    "ApiOverloadedError",
+                    "ApiConnectionClosedError",
+                    "ApiResponseStalledError",
+                    "NetworkConnectionError",
+                ],
+                "wait_multiplier": 2,
+                "min_wait_sec": 30,
+                "max_wait_sec": 60,
+            },
+        )
 
     def test_experiment_ids_are_readable_and_safe(self):
         experiment_id = lab.new_experiment_id("Smoke / Luna + DeepSeek")

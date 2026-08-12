@@ -87,6 +87,27 @@ class ResultNormalizationTests(unittest.TestCase):
             self.assertTrue(normalized["wavepeek"]["compliant"])
             self.assertEqual(normalized["runtime_seconds"], 5.0)
 
+            (trial / "agent/pi.txt").write_text(
+                json.dumps(
+                    {
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "stopReason": "error",
+                            "errorMessage": "429: temporarily rate-limited",
+                        },
+                    }
+                )
+                + "\n"
+            )
+            summary, errors = lab.normalize_run(run_dir, manifest)
+            self.assertEqual(summary["trials"][0]["infrastructure_status"], "failed")
+            self.assertEqual(
+                summary["trials"][0]["terminal_assistant_error"],
+                "429: temporarily rate-limited",
+            )
+            self.assertTrue(any("terminal assistant error" in error for error in errors))
+
             result["exception_info"] = {
                 "exception_type": "AgentTimeoutError",
                 "exception_message": "timed out",
@@ -125,9 +146,11 @@ class ResultNormalizationTests(unittest.TestCase):
                 "wavepeek": {"total_calls": 2, "successful_meaningful_calls": 2, "total_duration_seconds": 0.2, "compliant": True},
             },
         ]
+        trials.append({**base, "arm": "baseline", "benchmark_pass": True, "infrastructure_status": "failed"})
         analysis = lab.analyze_summary(trials)
         self.assertEqual(len(analysis["pairs"]), 2)
         self.assertEqual([pair["wavepeek_arm"] for pair in analysis["pairs"]], ["wavepeek@one", "wavepeek@two"])
+        self.assertTrue(all(pair["baseline_attempts"] == 1 for pair in analysis["pairs"]))
 
 
 if __name__ == "__main__":

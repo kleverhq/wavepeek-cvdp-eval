@@ -10,7 +10,7 @@
   },
   "compat": {
     "openRouterRouting": {
-      "allow_fallbacks": false
+      "allow_fallbacks": true
     }
   }
 }
