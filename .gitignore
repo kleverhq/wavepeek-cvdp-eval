@@ -3,6 +3,8 @@
 artifacts/
 jobs/
 experiments/*/artifacts/
+experiments/*.tar.zst
+experiments/*.tar.zst.sha256
 __pycache__/
 *.pyc
 agent/.build/

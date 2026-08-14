@@ -1,0 +1,819 @@
+{
+  "analysis": "experiments/2026-08-12_205534Z_deepseek-xhigh-full-3x-rerun_19f0bbea/artifacts/analysis.md",
+  "checksums_sha256": "3bae4922078fa4734f28af2c8079444c6e47fb0cee056d8f16a5d6417f22beb6",
+  "compact_results": {
+    "benchmark_passes": 83,
+    "infrastructure_complete": 104,
+    "reported_cost": null,
+    "wavepeek_calls": 991,
+    "wavepeek_duration_seconds": 2.734295,
+    "wavepeek_successful_queries": 739
+  },
+  "conclusion": "Infrastructure evidence retained; statistical interpretation depends on selected cohort and attempts.",
+  "created_at": "2026-08-12T20:55:34.102804+00:00",
+  "event": "experiment",
+  "experiment": "experiments/2026-08-12_205534Z_deepseek-xhigh-full-3x-rerun_19f0bbea",
+  "finished_at": "2026-08-13T07:34:08.660703+00:00",
+  "manifest": "experiments/2026-08-12_205534Z_deepseek-xhigh-full-3x-rerun_19f0bbea/artifacts/manifest.json",
+  "manifest_sha256": "0d83f659fa47c7682dd8ffb9be0cabc71699f5e29532916f5738e450f7228872",
+  "observed_trials": 108,
+  "purpose": "Compare selected CVDP cells under baseline and pinned WavePeek treatment through Harbor.",
+  "raw_artifacts": "experiments/2026-08-12_205534Z_deepseek-xhigh-full-3x-rerun_19f0bbea/artifacts/harbor/2026-08-12_205534Z_deepseek-xhigh-full-3x-rerun_19f0bbea",
+  "run_id": "2026-08-12_205534Z_deepseek-xhigh-full-3x-rerun_19f0bbea",
+  "selection": {
+    "arms": [
+      "baseline",
+      "wavepeek"
+    ],
+    "attempts": 3,
+    "models": [
+      "openrouter-deepseek-v4-flash-0731-xhigh"
+    ],
+    "tasks": [
+      "cvdp_agentic_AES_encryption_decryption_0003",
+      "cvdp_agentic_AES_encryption_decryption_0005",
+      "cvdp_agentic_AES_encryption_decryption_0009",
+      "cvdp_agentic_AES_encryption_decryption_0012",
+      "cvdp_agentic_axis_broadcaster_0001",
+      "cvdp_agentic_custom_fifo_0004",
+      "cvdp_agentic_direct_map_cache_0003",
+      "cvdp_agentic_dual_port_memory_0001",
+      "cvdp_agentic_heavy_2dconv-FPGA_0009",
+      "cvdp_agentic_heavy_I2SRV64_0001",
+      "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005",
+      "cvdp_agentic_heavy_friscv_0001",
+      "cvdp_agentic_heavy_friscv_0005",
+      "cvdp_agentic_heavy_opene902_0057",
+      "cvdp_agentic_heavy_opene902_0059",
+      "cvdp_agentic_heavy_opene902_0071",
+      "cvdp_agentic_lfsr_0001",
+      "cvdp_agentic_monte_carlo_0006"
+    ],
+    "wavepeek_revisions": [
+      "8779507b06f6b77be49f0d934ea9339140a8df2a"
+    ]
+  },
+  "status": "audit_failed",
+  "trajectory_observations": {
+    "by_cell": [
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 1,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 2,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      },
+      {
+        "arm": "wavepeek@8779507b06f6b77be49f0d934ea9339140a8df2a",
+        "attempt": 3,
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      }
+    ],
+    "delegated_trajectories": 0
+  },
+  "trial_count": 108
+}
