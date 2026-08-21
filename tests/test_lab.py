@@ -143,6 +143,25 @@ class FrozenSelectionTests(unittest.TestCase):
         self.assertEqual(matrix["arm_variants"], 3)
         self.assertEqual(matrix["trial_count"], len(lab.MODEL_PROFILES) * 3)
 
+    def test_candidate_revision_can_pin_a_baseline_only_continuation(self):
+        args = argparse.Namespace(
+            selector=None,
+            tasks="cvdp_agentic_custom_fifo_0004",
+            models="openai-codex-gpt-5.6-luna-xhigh",
+            arms="baseline",
+            attempts="1",
+            revisions="candidate",
+        )
+        lock = {
+            "wavepeek": {"commit": "1" * 40, "repository": "repo"},
+            "images": {"baseline": {"tag": "candidate-baseline", "id": "sha256:candidate"}},
+        }
+        with patch.object(lab, "resolve_wavepeek_revision", return_value=lock):
+            matrix = lab.resolve_matrix(args)
+        self.assertEqual(matrix["arm_variants"], 1)
+        self.assertEqual(matrix["trial_count"], 1)
+        self.assertEqual(matrix["baseline_image"], lock["images"]["baseline"])
+
 
 class MaterializationTests(unittest.TestCase):
     task_id = "cvdp_agentic_axis_broadcaster_0001"

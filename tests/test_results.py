@@ -51,7 +51,7 @@ class ResultNormalizationTests(unittest.TestCase):
                 json.dumps(
                     {
                         "started_at": "2026-01-01T00:00:01Z",
-                        "subcommand": "signal",
+                        "subcommand": "property",
                         "waveform_paths": ["/app/out.vcd"],
                         "exit_status": 0,
                     }

@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ARG CVDP_SIM_IMAGE=nvidia/cvdp-sim:v1.0.0
+ARG BASELINE_IMAGE=cvdp-pi-agent:baseline
 
 FROM node@sha256:dd9d21971ec4395903fa6143c2b9267d048ae01ca6d3ea96f16cb30df6187d94 AS node_tools
 ARG PI_NPM_INTEGRITY
@@ -14,10 +15,15 @@ COPY agent/.build/treatment-source.tar /tmp/source.tar
 RUN mkdir /src && tar -xf /tmp/source.tar -C /src \
     && cd /src \
     && cargo build --release --locked \
-    && mkdir -p /out/docs \
+    && mkdir -p /out/skill /out/docs \
     && cp target/release/wavepeek /out/wavepeek \
-    && /out/wavepeek skill > /out/SKILL.md \
-    && /out/wavepeek docs export /out/docs
+    && if /out/wavepeek skill /out/skill-package; then \
+         cp -a /out/skill-package/. /out/skill/ \
+         && cp -a /out/skill-package/references/. /out/docs/; \
+       else \
+         /out/wavepeek skill > /out/skill/SKILL.md \
+         && /out/wavepeek docs export /out/docs; \
+       fi
 
 FROM ${CVDP_SIM_IMAGE} AS common
 ARG PI_SUBAGENTS_SHA
@@ -44,11 +50,11 @@ LABEL org.cvdp-pi.pi.version="0.83.0" \
 FROM common AS baseline
 LABEL org.cvdp-pi.arm="baseline"
 
-FROM common AS wavepeek
+FROM ${BASELINE_IMAGE} AS wavepeek
 ARG WAVEPEEK_SHA
 ARG WAVEPEEK_SOURCE_SHA256
 COPY --from=treatment_builder /out/wavepeek /opt/wavepeek/bin/wavepeek.real
-COPY --from=treatment_builder /out/SKILL.md /opt/wavepeek/skills/wavepeek/SKILL.md
+COPY --from=treatment_builder /out/skill/ /opt/wavepeek/skills/wavepeek/
 COPY --from=treatment_builder /out/docs/ /opt/wavepeek/docs/
 COPY agent/wavepeek-wrapper.py /usr/local/bin/wavepeek
 RUN chmod 0755 /usr/local/bin/wavepeek /opt/wavepeek/bin/wavepeek.real \

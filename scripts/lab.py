@@ -358,6 +358,7 @@ def materialize(
     treatment_lock: dict | None = None,
     agent_timeout: int = 7200,
     verifier_timeout: int = 1800,
+    baseline_image: dict | None = None,
 ) -> Path:
     if arm not in {"baseline", "wavepeek"}:
         raise ValueError("arm must be baseline or wavepeek")
@@ -367,7 +368,7 @@ def materialize(
     row = full_row(selection)
     default_lock = json.loads(EXPERIMENT_LOCK.read_text())
     lock = treatment_lock or default_lock
-    image = (default_lock if arm == "baseline" else lock)["images"][arm]["tag"]
+    image = (baseline_image or default_lock["images"]["baseline"])["tag"] if arm == "baseline" else lock["images"][arm]["tag"]
     short = lock["wavepeek"]["commit"][:12]
     arm_id = "baseline" if arm == "baseline" else f"wavepeek-{short}"
     root = output_root or CACHE / "harbor" / "tasks" / short
@@ -529,11 +530,11 @@ def resolve_matrix(args: argparse.Namespace) -> dict:
         key: MODEL_PROFILES[key]["reasoning"]
         for key in model_keys
     }
-    treatment_locks = [resolve_wavepeek_revision(spec) for spec in revision_specs] if "wavepeek" in arms else []
+    treatment_locks = [resolve_wavepeek_revision(spec) for spec in revision_specs] if revision_specs else []
     commits = [lock["wavepeek"]["commit"] for lock in treatment_locks]
     if len(commits) != len(set(commits)):
         raise ValueError(f"WavePeek revision selectors resolve to duplicate commits: {commits}")
-    arm_variants = int("baseline" in arms) + len(treatment_locks)
+    arm_variants = int("baseline" in arms) + (len(treatment_locks) if "wavepeek" in arms else 0)
     count = len(task_ids) * len(model_keys) * arm_variants * attempts
     if smoke and count != 4:
         raise ValueError(f"smoke matrix must contain exactly four trials, resolved {count}")
@@ -560,6 +561,10 @@ def resolve_matrix(args: argparse.Namespace) -> dict:
             for spec, lock in zip(revision_specs, treatment_locks)
         ],
         "wavepeek_builds": treatment_locks,
+        "baseline_image": (
+            treatment_locks[0].get("images", {}).get("baseline")
+            if treatment_locks else None
+        ) or json.loads(EXPERIMENT_LOCK.read_text())["images"]["baseline"],
     }
 
 
@@ -580,6 +585,7 @@ def materialize_dataset(matrix: dict) -> Path:
                 task_id, "baseline", temporary,
                 agent_timeout=matrix.get("agent_timeout_seconds", 7200),
                 verifier_timeout=matrix.get("verifier_timeout_seconds", 1800),
+                baseline_image=matrix.get("baseline_image"),
             )
         if "wavepeek" in matrix["arms"]:
             for treatment_lock in matrix["wavepeek_builds"]:
@@ -686,10 +692,9 @@ def preflight(matrix: dict) -> None:
     check()
     check_credentials(matrix)
     harbor_bootstrap()
-    lock = json.loads(EXPERIMENT_LOCK.read_text())
     image_records = []
     if "baseline" in matrix["arms"]:
-        image_records.append(("baseline", lock["images"]["baseline"]))
+        image_records.append(("baseline", matrix["baseline_image"]))
     image_records.extend(
         (f"wavepeek@{candidate['wavepeek']['commit']}", candidate["images"]["wavepeek"])
         for candidate in matrix["wavepeek_builds"]
@@ -897,7 +902,7 @@ def parse_jsonl_optional(path: Path) -> list[dict]:
 def compliant_wavepeek_record(record: dict) -> bool:
     return (
         record.get("exit_status") == 0
-        and record.get("subcommand") in {"info", "scope", "signal", "change", "value", "extract"}
+        and record.get("subcommand") in {"info", "scope", "signal", "change", "value", "property", "extract"}
         and bool(record.get("waveform_paths"))
         and all(
             str(path).lower().endswith((".vcd", ".vcd.gz", ".fst", ".fsdb"))
@@ -1155,7 +1160,10 @@ def normalize_run(run_dir: Path, manifest: dict) -> tuple[dict, list[str]]:
         for model in manifest["matrix"]["model_ids"]
         for arm in (
             (["baseline"] if "baseline" in manifest["matrix"]["arms"] else [])
-            + [f"wavepeek@{commit}" for commit in manifest["matrix"]["wavepeek_revisions"]]
+            + (
+                [f"wavepeek@{commit}" for commit in manifest["matrix"]["wavepeek_revisions"]]
+                if "wavepeek" in manifest["matrix"]["arms"] else []
+            )
         )
         for attempt in range(1, manifest["matrix"]["attempts"] + 1)
     }

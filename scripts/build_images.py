@@ -93,6 +93,15 @@ def member_hash(archive_path: Path, member: str) -> str:
         return hashlib.sha256(stream.read()).hexdigest()
 
 
+def tree_hash(root: Path) -> str:
+    return hashlib.sha256(
+        b"".join(
+            path.relative_to(root).as_posix().encode() + b"\0" + path.read_bytes()
+            for path in sorted(root.rglob("*")) if path.is_file()
+        )
+    ).hexdigest()
+
+
 def image_id(image: str) -> str:
     return run(["docker", "image", "inspect", image, "--format", "{{.Id}}"])
 
@@ -171,7 +180,13 @@ def build(
     allow_unlocked: bool = False,
     output_manifest: Path | None = None,
 ) -> dict:
-    ensure_cvdp_image()
+    baseline_tag = "cvdp-pi-agent:baseline"
+    try:
+        reuse_baseline = allow_unlocked and bool(image_id(baseline_tag))
+    except RuntimeError:
+        reuse_baseline = False
+    if not reuse_baseline:
+        ensure_cvdp_image()
 
     wavepeek_archive = BUILD_DIR / "treatment-source.tar"
     subagents_archive = BUILD_DIR / "pi-subagents-source.tar"
@@ -192,13 +207,20 @@ def build(
         "-f", "agent/Dockerfile", "-",
     ]
     context = docker_context()
-    subprocess.run(["docker", "build", "--target", "baseline", "-t", "cvdp-pi-agent:baseline", *common_args], cwd=ROOT, input=context, check=True)
+    if not reuse_baseline:
+        subprocess.run(
+            ["docker", "build", "--target", "baseline", "-t", baseline_tag, *common_args],
+            cwd=ROOT,
+            input=context,
+            check=True,
+        )
     treatment_tag = f"cvdp-pi-agent:wavepeek-{commit[:12]}"
     subprocess.run(
         [
             "docker", "build", "--target", "wavepeek", "-t", treatment_tag,
             "--build-arg", f"WAVEPEEK_SHA={commit}",
             "--build-arg", f"WAVEPEEK_SOURCE_SHA256={wavepeek_source_hash}",
+            "--build-arg", f"BASELINE_IMAGE={baseline_tag}",
             *common_args,
         ],
         cwd=ROOT,
@@ -209,19 +231,15 @@ def build(
     with tempfile.TemporaryDirectory() as directory:
         temporary = Path(directory)
         binary = temporary / "wavepeek.real"
-        skill = temporary / "SKILL.md"
+        skill = temporary / "skill"
         docs = temporary / "docs"
         copy_from_image(treatment_tag, "/opt/wavepeek/bin/wavepeek.real", binary)
-        copy_from_image(treatment_tag, "/opt/wavepeek/skills/wavepeek/SKILL.md", skill)
+        copy_from_image(treatment_tag, "/opt/wavepeek/skills/wavepeek", skill)
         copy_from_image(treatment_tag, "/opt/wavepeek/docs", docs)
         binary_hash = sha256(binary)
-        skill_hash = sha256(skill)
-        docs_hash = hashlib.sha256(
-            b"".join(
-                path.relative_to(docs).as_posix().encode() + b"\0" + path.read_bytes()
-                for path in sorted(docs.rglob("*")) if path.is_file()
-            )
-        ).hexdigest()
+        skill_hash = sha256(skill / "SKILL.md")
+        docs_hash = tree_hash(docs)
+        skill_bundle_hash = tree_hash(skill) if (skill / "manifest.json").is_file() else None
 
     versions = run(
         [
@@ -285,6 +303,7 @@ def build(
             "skill_sha256": skill_hash,
             "docs_sha256": docs_hash,
             "version_output": versions.splitlines()[0].removeprefix("wavepeek="),
+            **({"skill_bundle_sha256": skill_bundle_hash} if skill_bundle_hash else {}),
         },
         "model_configs": {
             path.stem: sha256(path)
@@ -292,7 +311,7 @@ def build(
         },
         "experiment_config_sha256": sha256(ROOT / "config" / "experiment.json"),
         "images": {
-            "baseline": {"tag": "cvdp-pi-agent:baseline", "id": image_id("cvdp-pi-agent:baseline")},
+            "baseline": {"tag": baseline_tag, "id": image_id(baseline_tag)},
             "wavepeek": {"tag": treatment_tag, "id": image_id(treatment_tag)},
         },
     }
