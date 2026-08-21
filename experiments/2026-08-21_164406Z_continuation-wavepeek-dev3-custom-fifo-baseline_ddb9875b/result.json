@@ -1,0 +1,52 @@
+{
+  "analysis": "experiments/2026-08-21_164406Z_continuation-wavepeek-dev3-custom-fifo-baseline_ddb9875b/artifacts/analysis.md",
+  "checksums_sha256": "a57da7492d335e7d73eb4143cc0758875ad2cdb56927014d2d4b0596049f27d0",
+  "compact_results": {
+    "benchmark_passes": 1,
+    "infrastructure_complete": 1,
+    "reported_cost": null,
+    "wavepeek_calls": 0,
+    "wavepeek_duration_seconds": 0,
+    "wavepeek_successful_queries": 0
+  },
+  "conclusion": "Infrastructure evidence retained; statistical interpretation depends on selected cohort and attempts.",
+  "created_at": "2026-08-21T16:44:06.171231+00:00",
+  "event": "experiment",
+  "experiment": "experiments/2026-08-21_164406Z_continuation-wavepeek-dev3-custom-fifo-baseline_ddb9875b",
+  "finished_at": "2026-08-21T16:56:41.951715+00:00",
+  "manifest": "experiments/2026-08-21_164406Z_continuation-wavepeek-dev3-custom-fifo-baseline_ddb9875b/artifacts/manifest.json",
+  "manifest_sha256": "f2804593d86312ff9864459fe263b74da84fbad55c43566090f93c8fe1a43849",
+  "observed_trials": 1,
+  "purpose": "Compare selected CVDP cells under baseline and pinned WavePeek treatment through Harbor.",
+  "raw_artifacts": "experiments/2026-08-21_164406Z_continuation-wavepeek-dev3-custom-fifo-baseline_ddb9875b/artifacts/harbor/2026-08-21_164406Z_continuation-wavepeek-dev3-custom-fifo-baseline_ddb9875b",
+  "run_id": "2026-08-21_164406Z_continuation-wavepeek-dev3-custom-fifo-baseline_ddb9875b",
+  "selection": {
+    "arms": [
+      "baseline"
+    ],
+    "attempts": 1,
+    "models": [
+      "openai-codex-gpt-5.6-luna-xhigh"
+    ],
+    "tasks": [
+      "cvdp_agentic_custom_fifo_0004"
+    ],
+    "wavepeek_revisions": [
+      "b5eb7d20a1947c28d90ac6e6303466ef8cbdbc26"
+    ]
+  },
+  "status": "audit_failed",
+  "trajectory_observations": {
+    "by_cell": [
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-luna",
+        "subagents": 1,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      }
+    ],
+    "delegated_trajectories": 1
+  },
+  "trial_count": 1
+}
