@@ -1,0 +1,819 @@
+{
+  "analysis": "experiments/2026-08-22_011734Z_wavepeek-dev3-rc1-sol-high-full-3x_c4351f7d/artifacts/analysis.md",
+  "checksums_sha256": "35932456f52fe6d825fec522f34ed6e1518bb5d9dbb0e605e093892a1582aa46",
+  "compact_results": {
+    "benchmark_passes": 85,
+    "infrastructure_complete": 108,
+    "reported_cost": null,
+    "wavepeek_calls": 429,
+    "wavepeek_duration_seconds": 1.209924,
+    "wavepeek_successful_queries": 406
+  },
+  "conclusion": "Infrastructure evidence retained; statistical interpretation depends on selected cohort and attempts.",
+  "created_at": "2026-08-22T01:17:34.747324+00:00",
+  "event": "experiment",
+  "experiment": "experiments/2026-08-22_011734Z_wavepeek-dev3-rc1-sol-high-full-3x_c4351f7d",
+  "finished_at": "2026-08-22T02:44:31.808604+00:00",
+  "manifest": "experiments/2026-08-22_011734Z_wavepeek-dev3-rc1-sol-high-full-3x_c4351f7d/artifacts/manifest.json",
+  "manifest_sha256": "d6cc4c84ae460c439a2f3fcc0b9c811a97fd0decf011b2cd28f0beaf01c79b35",
+  "observed_trials": 108,
+  "purpose": "Compare selected CVDP cells under baseline and pinned WavePeek treatment through Harbor.",
+  "raw_artifacts": "experiments/2026-08-22_011734Z_wavepeek-dev3-rc1-sol-high-full-3x_c4351f7d/artifacts/harbor/2026-08-22_011734Z_wavepeek-dev3-rc1-sol-high-full-3x_c4351f7d",
+  "run_id": "2026-08-22_011734Z_wavepeek-dev3-rc1-sol-high-full-3x_c4351f7d",
+  "selection": {
+    "arms": [
+      "baseline",
+      "wavepeek"
+    ],
+    "attempts": 3,
+    "models": [
+      "openai-codex-gpt-5.6-sol-high"
+    ],
+    "tasks": [
+      "cvdp_agentic_AES_encryption_decryption_0003",
+      "cvdp_agentic_AES_encryption_decryption_0005",
+      "cvdp_agentic_AES_encryption_decryption_0009",
+      "cvdp_agentic_AES_encryption_decryption_0012",
+      "cvdp_agentic_axis_broadcaster_0001",
+      "cvdp_agentic_custom_fifo_0004",
+      "cvdp_agentic_direct_map_cache_0003",
+      "cvdp_agentic_dual_port_memory_0001",
+      "cvdp_agentic_heavy_2dconv-FPGA_0009",
+      "cvdp_agentic_heavy_I2SRV64_0001",
+      "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005",
+      "cvdp_agentic_heavy_friscv_0001",
+      "cvdp_agentic_heavy_friscv_0005",
+      "cvdp_agentic_heavy_opene902_0057",
+      "cvdp_agentic_heavy_opene902_0059",
+      "cvdp_agentic_heavy_opene902_0071",
+      "cvdp_agentic_lfsr_0001",
+      "cvdp_agentic_monte_carlo_0006"
+    ],
+    "wavepeek_revisions": [
+      "fcdb1ada4dccd09b98202822ce0e2b088484a600"
+    ]
+  },
+  "status": "harbor_complete",
+  "trajectory_observations": {
+    "by_cell": [
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0012"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0005"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_AES_encryption_decryption_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_axis_broadcaster_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_custom_fifo_0004"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_direct_map_cache_0003"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_dual_port_memory_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_2dconv-FPGA_0009"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_I2SRV64_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_ULX3S_FPGA_Camera_Streaming_0005"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_friscv_0005"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0057"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0059"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_heavy_opene902_0071"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_lfsr_0001"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      },
+      {
+        "arm": "baseline",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 1,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 2,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      },
+      {
+        "arm": "wavepeek@fcdb1ada4dccd09b98202822ce0e2b088484a600",
+        "attempt": 3,
+        "model": "openai-codex/gpt-5.6-sol",
+        "subagents": 0,
+        "task": "cvdp_agentic_monte_carlo_0006"
+      }
+    ],
+    "delegated_trajectories": 0
+  },
+  "trial_count": 108
+}
